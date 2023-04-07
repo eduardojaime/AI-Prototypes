@@ -9,7 +9,7 @@ class ChatService : IChatService
     {
         _configuration = configuration;
     }
-    public string SendQuestion(string question)
+    public string SendQuestion(string messageContent)
     {
         string result = "";
         // Set the API endpoint and API key
@@ -18,7 +18,9 @@ class ChatService : IChatService
         Console.WriteLine($"Utilizing {apiKey}");
         // Create the JSON payload
         // TODO See Insomnia Personal POCs
-        string requestJson = "{\"prompt\":\"Once upon a time\", \"temperature\":0.5, \"max_tokens\":100, \"n\":1, \"stop\":\"\\n\\n\"}";
+        //string requestJson = "{\"prompt\":\"Once upon a time\", \"temperature\":0.5, \"max_tokens\":100, \"n\":1, \"stop\":\"\\n\\n\"}";
+        string requestJson = "{\"model\": \"gpt-3.5-turbo\",\"messages\": [{\"role\": \"user\", \"content\": \"" + messageContent + "\"}]}";
+
         // Create a new HttpClient object
         using (var client = new HttpClient())
         {
@@ -33,9 +35,10 @@ class ChatService : IChatService
             {
                 // Deserialize the JSON response
                 var responseJson = response.Content.ReadAsStringAsync().Result;
-                var responseObject = JsonConvert.DeserializeObject<dynamic>(responseJson);
+                var responseObject = JsonConvert.DeserializeObject<ChatResponse>(responseJson);
+                Console.WriteLine(responseObject);
                 // Extract the generated text from the response
-                string generatedText = responseObject.choices[0].text;
+                string generatedText = responseObject.Choices[0].Message.Content;
                 // Output the generated text
                 result = generatedText;
             }

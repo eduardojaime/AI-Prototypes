@@ -1,5 +1,5 @@
 class ChatRequest
 {
-    public string Model;
-    public List<ChatMessage> Messages;
+    public string? Model;
+    public List<ChatMessage>? Messages;
 }

@@ -22,7 +22,7 @@ The proposed architecture contains 4 layers:
 
 Reference diagram below:
 
-![Reference Diagram](/RefArch/diagrams\cerebroarchitecture.png)
+![Reference Diagram](/RefArch/diagrams/CerebroArchitecture.png)
 
 ## Change Log
 

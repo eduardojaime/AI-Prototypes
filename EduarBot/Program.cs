@@ -6,7 +6,7 @@ var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/SendQuestion", (string message, IChatService chatService) =>
+app.MapGet("/api/SendMessage", (string message, IChatService chatService) =>
 {
     try
     {

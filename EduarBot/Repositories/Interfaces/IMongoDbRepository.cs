@@ -1,0 +1,4 @@
+﻿interface IMongoDbRepository
+{
+    // TODO
+}

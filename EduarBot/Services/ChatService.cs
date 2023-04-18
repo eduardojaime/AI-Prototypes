@@ -18,9 +18,18 @@ class ChatService : IChatService
         Console.WriteLine($"Utilizing {apiKey}");
         // Create the JSON payload
         // TODO See Insomnia Personal POCs
+        ChatRequest requestObj = new ChatRequest() {
+            Model = "gpt-3.5-turbo",
+            Messages = new List<ChatMessage>(){
+                new ChatMessage() {
+                    Role="User",
+                    Content=messageContent
+                }
+            }
+        };
         //string requestJson = "{\"prompt\":\"Once upon a time\", \"temperature\":0.5, \"max_tokens\":100, \"n\":1, \"stop\":\"\\n\\n\"}";
-        string requestJson = "{\"model\": \"gpt-3.5-turbo\",\"messages\": [{\"role\": \"user\", \"content\": \"" + messageContent + "\"}]}";
-
+        string requestJson = JsonConvert.SerializeObject(requestObj).ToLower(); // "{\"model\": \"gpt-3.5-turbo\",\"messages\": [{\"role\": \"user\", \"content\": \"" + messageContent + "\"}]}";
+        Console.WriteLine(requestJson);
         // Create a new HttpClient object
         using (var client = new HttpClient())
         {

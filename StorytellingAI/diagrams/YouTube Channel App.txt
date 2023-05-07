@@ -1,0 +1,20 @@
+title YouTube Channel App
+
+participant App
+participant ChatGPT
+participant StableDiffusion
+participant ElevenLabs
+participant Canva
+participant YouTube
+
+App->ChatGPT: Prompt for table containing script and img prompt
+App<--ChatGPT: Table with Script and Prompt
+App->App: Break down table
+App->StableDiffusion: Prompt for Images
+App<--StableDiffusion: Generated Images
+App->ElevenLabs: Generate Audio Snippets
+App<--ElevenLabs: Generated Audio
+App->Canva: Upload Audio/Images
+App<--Canva: Generated Presentation in MP4
+App->YouTube: Upload MP4
+App<--YouTube: Confirmation

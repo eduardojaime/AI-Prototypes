@@ -3,6 +3,8 @@ channel
 *.png
 *.mpeg
 *.csv
+*.txt
+*.mp4
 # Logs
 logs
 *.log

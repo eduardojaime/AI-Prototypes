@@ -26,9 +26,15 @@ const configs = {
   },
   ElevenLabs: {
     Endpoint:
-      "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB",
+      "https://api.elevenlabs.io/v1/text-to-speech/Rbx3v5md8kpvDWOlrE1c",
     Secret: process.env.ELEVENLABS_SECRET,
-    ModelId: "eleven_monolingual_v1"
+    VoiceId: "Rbx3v5md8kpvDWOlrE1c",
+    MonolingualModelId: "eleven_monolingual_v1",
+    MultilingualModelId: "eleven_multilingual_v1",
+    VoiceSettings: {
+      Stability: "0.5",
+      Similarity: "0.75",
+    }
   },
 };
 

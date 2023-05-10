@@ -132,7 +132,7 @@ async function GenerateAudio(audioPrompt, idx) {
     // new code
     const options = {
       method: "POST",
-      url: `${ElevenLabsEndpoint}`,
+      url: `${ElevenLabsEndpoint}`, // Includes VoiceId
       headers: {
         "xi-api-key": `${ElevenLabsSecret}`, // Set the API key in the headers.
         accept: "audio/mpeg", // Set the expected response type to audio/mpeg.
@@ -140,10 +140,10 @@ async function GenerateAudio(audioPrompt, idx) {
       },
       data: {
         text: audioPrompt, // Pass in the inputText as the text to be converted to speech.
-        model_id: configs.ElevenLabs.ModelId,
+        model_id: configs.ElevenLabs.MultilingualModelId,
         voice_settings: {
-          stability: 0,
-          similarity_boost: 0,
+          stability: configs.ElevenLabs.VoiceSettings.Stability,
+          similarity_boost: configs.ElevenLabs.VoiceSettings.Similarity,
         },
       },
       responseType: "arraybuffer", // Set the responseType to arraybuffer to receive binary data as response.

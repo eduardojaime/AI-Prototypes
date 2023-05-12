@@ -7,7 +7,7 @@ const folderPath = "./output";
 const outputFolder = path.join(__dirname, "output");
 // changed output folder
 const finalOutput = path.join(
-    outputFolder,
+  outputFolder,
   `final_output_${Math.floor(Date.now() / 1000)}.mp4`
 );
 fs.mkdirSync(outputFolder, { recursive: true });
@@ -19,12 +19,14 @@ prompt.start();
 
 async function main() {
   let skipCSV = false;
-  let generateCSV = await GetAnswer("Do you want to generate a CSV file with the script?");
+
+  let generateCSV = await GetAnswer(
+    "Do you want to generate a CSV file with the script?"
+  );
   if (generateCSV == "Y") {
     console.log("Generating CSV file with the script");
     skipCSV = false;
-  }
-  else {
+  } else {
     console.log("Skipping CSV generation, utilizing existing CSV script.");
     skipCSV = true;
   }
@@ -34,10 +36,17 @@ async function main() {
     "Is the CSV file in the correct format? Press Y to confirm."
   );
   if (verified == "Y") {
-    console.log("OK - Generating Image files");
-    await assets(true, false, true);
-    console.log("OK - Generating Audio files");
-    await assets(true, true, false);
+    let generateAssets = await GetAnswer(
+      "Do you want to generate image and audio files?"
+    );
+    if (generateAssets == "Y") {
+      console.log("OK - Generating Image and Audio files");
+      await assets(true, false, false);
+      // console.log("OK - Generating Audio files");
+      // await assets(true, true, false);
+    } else {
+      console.log("Skipping asset generation, utilizing existing assets.");
+    }
   } else {
     console.log("Stopping Execution");
     return;

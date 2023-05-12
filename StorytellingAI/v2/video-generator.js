@@ -74,7 +74,18 @@ async function concatVideos(videoFiles, outputPath) {
     ffmpeg()
       .input(concatListPath)
       .inputOptions(["-f concat", "-safe 0"])
-      .outputOptions("-c copy")
+      .input(path.join(__dirname, "output/background.mp3")) // background audio file
+      //.outputOptions("-c copy")
+      .outputOptions("-c:v copy") // copy video codec
+      .outputOptions("-c:a aac") // encode audio to AAC
+      // .outputOptions("-map 0:v")  // map video from the first input
+      // .outputOptions("-map 0:a")  // map video from the first input
+      // .outputOptions("-map 1:a")  // map audio from the second input
+      .complexFilter([
+        "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file) by half
+        "[0:a][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
+      ])
+      .outputOptions(["-map 0:v", "-map [a]"])
       .save(outputPath)
       .on("end", () => {
         console.log("Concatenation completed: " + outputPath);

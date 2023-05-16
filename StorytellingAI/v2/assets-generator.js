@@ -5,9 +5,6 @@ const axios = require("axios");
 const fs = require("fs");
 
 async function GenerateAssets(skipCSV, skipImg, skipAudio) {
-//   const skipCSV = true;
-//   const skipImg = false;
-//   const skipAudio = false;
   // Pipeline starts
   // Query OpenAI text generation > get img prompt and script
   let csv = "";
@@ -16,9 +13,8 @@ async function GenerateAssets(skipCSV, skipImg, skipAudio) {
   const ChatPrompt = fs.readFileSync(configs.OpenAI.ChatPrompt, "utf-8");
   const SystemPrompt = fs.readFileSync(configs.OpenAI.SystemPrompt, "utf-8");
 
-  console.log("Generating CSV");
-
   if (!skipCSV) {
+    console.log("Generating CSV");
     const options = {
       method: "POST",
       url: `${OpenAIEndpoint}`,
@@ -37,16 +33,17 @@ async function GenerateAssets(skipCSV, skipImg, skipAudio) {
     let resp = await axios.request(options);
     csv = resp.data.choices[0].message.content;
     fs.writeFileSync("output/response.csv", csv);
+    console.log("CSV created, now processing");
   } else {
     csv = fs.readFileSync("output/response.csv", "utf-8");
   }
+
   // Process CSV
-  console.log("CSV created, now processing");
   let arr = csv.split(/\r\n|\r|\n/);
   let idx = 1;
   for (const val of arr) {
     if (val.includes("---") || val.includes("STORY-")) {
-      console.log("skipping");
+      // console.log("skipping");
     } else {
       let row = val.split("|");
 
@@ -54,22 +51,17 @@ async function GenerateAssets(skipCSV, skipImg, skipAudio) {
         let imgPrompt = row[1]; // "A dark and eerie factory with smoke billowing out of the chimneys in the middle of a deserted town.";
         console.log("Generating Img Asset " + idx);
         await GenerateImage(imgPrompt, idx);
-      } else {
-        console.log("Skipping Image Generation " + idx);
       }
 
       if (!skipAudio) {
         let audioPrompt = row[0]; // "There was a young man named Jorge who lived in a small town on the outskirts of Ciudad Juarez.";
         console.log("Generating Audio Asset " + idx);
         await GenerateAudio(audioPrompt, idx);
-      } else {
-        console.log("Skipping Audio Generation " + idx);
       }
+
       idx++;
     }
   }
-  // Query fluent-ffmpeg
-  // Query YouTube API and upload video
 }
 
 async function GenerateImage(imgPrompt, idx) {
@@ -116,7 +108,10 @@ async function GenerateImage(imgPrompt, idx) {
     let imgResp = await axios.request(options);
     base64String = imgResp.data.artifacts[0].base64;
     let binaryData = Buffer.from(base64String, "base64");
-    fs.writeFileSync(`output/image-${idx.toString().padStart(2,0)}.png`, binaryData);
+    fs.writeFileSync(
+      `output/image-${idx.toString().padStart(2, 0)}.png`,
+      binaryData
+    );
     console.log("Img Asset Generated");
   } catch (ex) {
     console.log("Error in Stability AI: " + ex.response.data.message);
@@ -150,14 +145,14 @@ async function GenerateAudio(audioPrompt, idx) {
     };
     // Send the API request using Axios and wait for the response.
     const audioResp = await axios.request(options);
-    fs.writeFileSync(`output/audio-${idx.toString().padStart(2,0)}.mpeg`, audioResp.data);
+    fs.writeFileSync(
+      `output/audio-${idx.toString().padStart(2, 0)}.mpeg`,
+      audioResp.data
+    );
     console.log("Audio Asset Generated");
   } catch (ex) {
     console.log("Error in Eleven Labs: " + ex.response.data);
   }
 }
-
-// Initiate process
-// main(true, true, true);
 
 module.exports = GenerateAssets;

@@ -36,16 +36,25 @@ async function main() {
     "Is the CSV file in the correct format? Press Y to confirm."
   );
   if (verified == "Y") {
-    let generateAssets = await GetAnswer(
-      "Do you want to generate image and audio files?"
+    let generateImages = await GetAnswer(
+      "Do you want to generate image files?"
     );
-    if (generateAssets == "Y") {
-      console.log("OK - Generating Image and Audio files");
-      await assets(true, false, false);
-      // console.log("OK - Generating Audio files");
-      // await assets(true, true, false);
+    if (generateImages == "Y") {
+      console.log("OK - Generating Image files");
+      await assets(true, false, true);
     } else {
-      console.log("Skipping asset generation, utilizing existing assets.");
+      console.log(
+        "Skipping image assets generation, utilizing existing assets."
+      );
+    }
+    let generateAudio = await GetAnswer("Do you want to generate audio files?");
+    if (generateAudio == "Y") {
+      console.log("OK - Generating Audio files");
+      await assets(true, true, false);
+    } else {
+      console.log(
+        "Skipping audio asset generation, utilizing existing assets."
+      );
     }
   } else {
     console.log("Stopping Execution");

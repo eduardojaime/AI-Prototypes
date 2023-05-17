@@ -98,10 +98,10 @@ async function GenerateImage(imgPrompt, idx) {
             text: configs.StabilityAI.AdditionalPrompt,
             weight: 1,
           },
-          {
-            text: configs.StabilityAI.NegativePrompt,
-            weight: -1,
-          },
+          // {
+          //   text: configs.StabilityAI.NegativePrompt,
+          //   weight: -1,
+          // },
         ],
       },
     };

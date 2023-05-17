@@ -22,11 +22,11 @@ const configs = {
     Steps: 75,
     Seed: 0,
     CFGScale: 7,
-    ClipGuidancePreset: "SIMPLE"
+    ClipGuidancePreset: "SIMPLE",
   },
   ElevenLabs: {
     Endpoint:
-      "https://api.elevenlabs.io/v1/text-to-speech/Rbx3v5md8kpvDWOlrE1c",
+      "https://api.elevenlabs.io/v1/text-to-speech/RMSpIJWPsZD2Oq4s7dTo",
     Secret: process.env.ELEVENLABS_SECRET,
     VoiceId: "RMSpIJWPsZD2Oq4s7dTo",
     MonolingualModelId: "eleven_monolingual_v1",
@@ -34,8 +34,8 @@ const configs = {
     VoiceSettings: {
       Stability: "1.0",
       Similarity: "1.0",
-    }
-  },
+    },
+  }
 };
 
 module.exports = configs;

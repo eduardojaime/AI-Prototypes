@@ -10,6 +10,10 @@ const finalOutput = path.join(
   outputFolder,
   `final_output_${Math.floor(Date.now() / 1000)}.mp4`
 );
+const finalOutputWithBgSound = path.join(
+  outputFolder,
+  `final_output_${Math.floor(Date.now() / 1000)}_background.mp4`
+);
 fs.mkdirSync(outputFolder, { recursive: true });
 
 let audioFiles = [];
@@ -82,7 +86,7 @@ async function main() {
 
     if (imageFiles.length == audioFiles.length && imageFiles.length > 0) {
       console.log("Images and Audio files match");
-      await video(audioFiles, imageFiles, outputFolder, finalOutput);
+      await video(audioFiles, imageFiles, outputFolder, finalOutput, finalOutputWithBgSound);
     } else {
       console.log(
         "Process will not start. Mismatch between image and audio files."

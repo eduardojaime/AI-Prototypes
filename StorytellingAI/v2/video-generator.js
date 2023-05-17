@@ -5,7 +5,8 @@ const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 const ffmpeg = require("fluent-ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-async function processFiles(audioFiles, imageFiles, outputFolder, finalOutput) {
+async function processFiles(audioFiles, imageFiles, outputFolder, finalOutput, finalOutputWithBgSound) {
+  let backgroundSound = path.join(__dirname, "output/background.mp3");
   console.log("Starting Processing");
   console.log(outputFolder);
   if (audioFiles.length !== imageFiles.length) {
@@ -29,9 +30,12 @@ async function processFiles(audioFiles, imageFiles, outputFolder, finalOutput) {
       console.error("Error processing files:", error.message);
     }
   }
+
   try {
     await concatVideos(videoFiles, finalOutput);
+    await addBackgroundEffect(finalOutput, backgroundSound, finalOutputWithBgSound);
     videoFiles.forEach((file) => fs.unlinkSync(file));
+
   } catch (error) {
     console.error("Error concatenating videos:", error.message);
   }
@@ -65,7 +69,7 @@ async function mergeAudioAndImages(audioPath, imagePath, outputPath) {
   });
 }
 
-async function concatVideos(videoFiles, outputPath) {
+async function concatVideos(videoFiles, finalOutput) {
   return new Promise((resolve, reject) => {
     const concatListPath = path.join(__dirname, "concat-list.txt");
     const concatList = videoFiles.map((file) => `file '${file}'`).join("\n");
@@ -74,26 +78,41 @@ async function concatVideos(videoFiles, outputPath) {
     ffmpeg()
       .input(concatListPath)
       .inputOptions(["-f concat", "-safe 0"])
-      .input(path.join(__dirname, "output/background.mp3")) // background audio file
-      //.outputOptions("-c copy")
-      .outputOptions("-c:v copy") // copy video codec
-      .outputOptions("-c:a aac") // encode audio to AAC
-      // .outputOptions("-map 0:v")  // map video from the first input
-      // .outputOptions("-map 0:a")  // map video from the first input
-      // .outputOptions("-map 1:a")  // map audio from the second input
-      .complexFilter([
-        "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file) by half
-        "[0:a][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
-      ])
-      .outputOptions(["-map 0:v", "-map [a]"])
-      .save(outputPath)
+      .outputOptions("-c copy")
+      .save(finalOutput)
       .on("end", () => {
-        console.log("Concatenation completed: " + outputPath);
+        console.log("Concatenation completed: " + finalOutput);
         fs.unlinkSync(concatListPath); // Clean up the concat list file
         resolve();
       })
       .on("error", (error) => {
         console.error("Error during concatenation:", error.message);
+        reject(error);
+      });
+  });
+
+}
+
+async function addBackgroundEffect(finalOutput, backgroundFile, finalOutputWithBgSound) {
+  return new Promise((resolve, reject) => {
+
+     ffmpeg()
+      .input(finalOutput)
+      .input(backgroundFile) // background audio file
+      .outputOptions("-c:v copy") // copy video codec
+      .outputOptions("-c:a aac") // encode audio to AAC
+      .complexFilter([
+        "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file) by half
+        "[0:a][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
+      ])
+      .outputOptions(["-map 0:v", "-map [a]"])
+      .save(finalOutputWithBgSound)
+      .on("end", () => {
+        console.log("Background sound added: " + finalOutputWithBgSound);
+        resolve();
+      })
+      .on("error", (error) => {
+        console.error("Error while adding background sound:", error.message);
         reject(error);
       });
   });

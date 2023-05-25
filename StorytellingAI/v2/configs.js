@@ -19,7 +19,7 @@ const configs = {
     Width: 1024,
     Height: 576,
     Samples: 1,
-    Steps: 75,
+    Steps: 50,
     Seed: 0,
     CFGScale: 7,
     ClipGuidancePreset: "SIMPLE",

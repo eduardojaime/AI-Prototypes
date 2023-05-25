@@ -78,11 +78,12 @@ async function concatVideos(videoFiles, finalOutput) {
     ffmpeg()
       .input(concatListPath)
       .inputOptions(["-f concat", "-safe 0"])
-      .outputOptions("-c copy")
+      .outputOptions(["-c:v libx264", "-c:a aac"]) // try re-encoding your video to use the H.264 video codec and AAC audio codec if not already using them, as these are widely supported and recommended by YouTube
+      // .outputOptions("-c copy") // This option, which simply copies the input streams to the output. This is fast and doesn't degrade quality, but it might not handle concatenation of dissimilar files well. Try removing this option to have ffmpeg re-encode the streams during concatenation, which might result in better handling of the audio transition
       .save(finalOutput)
       .on("end", () => {
         console.log("Concatenation completed: " + finalOutput);
-        fs.unlinkSync(concatListPath); // Clean up the concat list file
+        fs.unlinkSync(concatListPath); 
         resolve();
       })
       .on("error", (error) => {
@@ -95,12 +96,12 @@ async function concatVideos(videoFiles, finalOutput) {
 
 async function addBackgroundEffect(finalOutput, backgroundFile, finalOutputWithBgSound) {
   return new Promise((resolve, reject) => {
-
      ffmpeg()
       .input(finalOutput)
       .input(backgroundFile) // background audio file
-      .outputOptions("-c:v copy") // copy video codec
-      .outputOptions("-c:a aac") // encode audio to AAC
+      // .outputOptions("-c:v copy") // copy video codec
+      // .outputOptions("-c:a aac") // encode audio to AAC
+      .outputOptions(["-c:v libx264", "-c:a aac"]) // try re-encoding your video to use the H.264 video codec and AAC audio codec if not already using them, as these are widely supported and recommended by YouTube
       .complexFilter([
         "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file) by half
         "[0:a][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",

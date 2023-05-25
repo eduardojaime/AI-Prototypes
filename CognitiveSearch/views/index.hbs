@@ -1,0 +1,26 @@
+<h1>{{title}}</h1>
+<p>Use the text field below to perform a search:</p>
+<form method="post">
+  <input
+    type="text"
+    id="query"
+    name="query"
+    placeholder="Enter your query..."
+    required
+  />
+  <button type="submit">Search</button>
+</form>
+{{#if results.value}} 
+{{#each results.value}}
+  <div id="results">
+    <h4>{{this.ApiName}} ({{this.Version}})</h4>
+    <p>{{this.Description}}</p>
+    <p>{{this.Type}}</p>
+  </div>
+  <hr>
+{{/each}}
+{{else}}
+  <div id="results">
+    <h1>No relevant results found</h1>
+    </div>
+{{/if}}

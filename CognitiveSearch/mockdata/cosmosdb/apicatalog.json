@@ -1,0 +1,122 @@
+[
+  {
+    "ApiName": "Trippledex",
+    "Version": "0.61",
+    "Description": "This API provides access to Discount Information",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Tresom",
+    "Version": "9.09",
+    "Description": "This API provides access to Enrollment Information",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Gembucket",
+    "Version": "0.51",
+    "Description": "This API provides access to Vendor Information",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Viva",
+    "Version": "9.5",
+    "Description": "This API provides access to Product Enrollment",
+    "Type": "FHIR"
+  },
+  {
+    "ApiName": "Duobam",
+    "Version": "0.8.4",
+    "Description": "This API provides access to Prescription Information",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Daltfresh",
+    "Version": "7.20",
+    "Description": "This API provides access to Insurance Products",
+    "Type": "FHIR"
+  },
+  {
+    "ApiName": "Y-Solowarm",
+    "Version": "6.5",
+    "Description": "This API provides access to Cost Transparency Information",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Tempsoft",
+    "Version": "1.00",
+    "Description": "TODO",
+    "Type": "FHIR"
+  },
+  {
+    "ApiName": "Cookley",
+    "Version": "2.75",
+    "Description": "TODO",
+    "Type": "AGENT"
+  },
+  {
+    "ApiName": "Ronstring",
+    "Version": "3.4",
+    "Description": "TODO",
+    "Type": "AGENT"
+  },
+  {
+    "ApiName": "Tempsoft",
+    "Version": "0.69",
+    "Description": "TODO",
+    "Type": "AGENT"
+  },
+  {
+    "ApiName": "Konklab",
+    "Version": "9.6.8",
+    "Description": "TODO",
+    "Type": "FHIR"
+  },
+  {
+    "ApiName": "Vagram",
+    "Version": "0.43",
+    "Description": "TODO",
+    "Type": "FHIR"
+  },
+  {
+    "ApiName": "Bamity",
+    "Version": "0.1.9",
+    "Description": "TODO",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Holdlamis",
+    "Version": "6.4.9",
+    "Description": "TODO",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Gembucket",
+    "Version": "0.55",
+    "Description": "TODO",
+    "Type": "FHIR"
+  },
+  {
+    "ApiName": "Bigtax",
+    "Version": "9.47",
+    "Description": "TODO",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Rank",
+    "Version": "0.45",
+    "Description": "TODO",
+    "Type": "ENROLLMENT"
+  },
+  {
+    "ApiName": "Voyatouch",
+    "Version": "6.38",
+    "Description": "TODO",
+    "Type": "FHIR"
+  },
+  {
+    "ApiName": "Prodder",
+    "Version": "0.9.3",
+    "Description": "TODO",
+    "Type": "AGENT"
+  }
+]

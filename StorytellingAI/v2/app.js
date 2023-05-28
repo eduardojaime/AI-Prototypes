@@ -79,7 +79,7 @@ async function main() {
     imageFiles = pngFilePaths;
 
     const mpegFiles = files.filter(
-      (file) => path.extname(file).toLowerCase() === ".mpeg"
+      (file) => path.extname(file).toLowerCase() === ".mp3" && path.basename(file) !== "background.mp3"
     );
     const mpegFilePaths = mpegFiles.map((file) => path.join(folderPath, file));
     audioFiles = mpegFilePaths;

@@ -3,6 +3,8 @@ const fs = require("fs");
 const path = require("path");
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 const ffmpeg = require("fluent-ffmpeg");
+const mm = require('music-metadata');
+
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 async function processFiles(audioFiles, imageFiles, outputFolder, finalOutput, finalOutputWithBgSound) {
@@ -44,28 +46,31 @@ async function processFiles(audioFiles, imageFiles, outputFolder, finalOutput, f
 async function mergeAudioAndImages(audioPath, imagePath, outputPath) {
   console.log("Merging Audio and Files");
 
+  const metadata = await mm.parseFile(audioPath);
+  // console.log(metadata);
+  let duration = metadata.format.duration;
+
   return new Promise((resolve, reject) => {
     ffmpeg()
-      .addInput(imagePath)
-      .addInputOption(["-loop 1"]) // Loop the image to match the audio duration
-      .addInput(audioPath)
-      .addOutputOptions([
-        "-c:v libx264",
-        "-tune stillimage",
-        "-c:a aac",
-        "-b:a 192k",
-        "-pix_fmt yuv420p",
-        "-shortest",
-      ])
-      .save(outputPath)
-      .on("end", () => {
-        console.log("Merging completed: " + outputPath);
-        resolve();
-      })
-      .on("error", (error) => {
-        console.error("Error during merging:", error.message);
-        reject(error);
-      });
+    .input(imagePath)
+    .loop(duration)
+    .input(audioPath)
+    .videoCodec('libx264')
+    .outputOption('-tune stillimage')
+    .audioCodec('aac')
+    .audioBitrate('192k')
+    .outputOptions('-pix_fmt yuv420p')
+    .outputOptions('-shortest')
+    .videoFilters('scale=1920:1080')
+    .save(outputPath)
+    .on("end", () => {
+      console.log("Merging completed: " + outputPath);
+      resolve();
+    })
+    .on("error", (error) => {
+      console.error("Error during merging:", error.message);
+      reject(error);
+    });
   });
 }
 
@@ -78,7 +83,7 @@ async function concatVideos(videoFiles, finalOutput) {
     ffmpeg()
       .input(concatListPath)
       .inputOptions(["-f concat", "-safe 0"])
-      .outputOptions(["-c:v libx264", "-c:a aac"]) // try re-encoding your video to use the H.264 video codec and AAC audio codec if not already using them, as these are widely supported and recommended by YouTube
+      // .outputOptions(["-c:v libx264", "-c:a aac"]) // try re-encoding your video to use the H.264 video codec and AAC audio codec if not already using them, as these are widely supported and recommended by YouTube
       // .outputOptions("-c copy") // This option, which simply copies the input streams to the output. This is fast and doesn't degrade quality, but it might not handle concatenation of dissimilar files well. Try removing this option to have ffmpeg re-encode the streams during concatenation, which might result in better handling of the audio transition
       .save(finalOutput)
       .on("end", () => {
@@ -95,10 +100,14 @@ async function concatVideos(videoFiles, finalOutput) {
 }
 
 async function addBackgroundEffect(finalOutput, backgroundFile, finalOutputWithBgSound) {
+  const metadata = await mm.parseFile(finalOutput);
+  let duration = metadata.format.duration;
   return new Promise((resolve, reject) => {
      ffmpeg()
       .input(finalOutput)
       .input(backgroundFile) // background audio file
+      // .loop(duration) not found needs rework
+      // removing these  as these are already set during merging
       // .outputOptions("-c:v copy") // copy video codec
       // .outputOptions("-c:a aac") // encode audio to AAC
       .outputOptions(["-c:v libx264", "-c:a aac"]) // try re-encoding your video to use the H.264 video codec and AAC audio codec if not already using them, as these are widely supported and recommended by YouTube

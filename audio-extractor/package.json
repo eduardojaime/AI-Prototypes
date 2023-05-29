@@ -1,0 +1,19 @@
+{
+  "name": "audio-extractor",
+  "version": "1.0.0",
+  "description": "Simple tool to extract audio from videos, and split into smaller audio files",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eduardo Jaime",
+  "license": "ISC",
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "audio-split": "^1.0.6",
+    "audio-splitter": "^1.1.1",
+    "ffmpeg": "^0.0.4",
+    "ffmpeg-extract-audio": "^1.0.2",
+    "fluent-ffmpeg": "^2.1.2"
+  }
+}

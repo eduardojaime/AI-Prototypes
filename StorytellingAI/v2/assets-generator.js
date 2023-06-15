@@ -23,7 +23,7 @@ async function GenerateAssets(skipCSV, skipImg, skipAudio) {
         "content-type": "application/json", // Set the content type to application/json.
       },
       data: {
-        model: "gpt-3.5-turbo",
+        model: "gpt-3.5-turbo-16k",
         messages: [
           { role: "system", content: SystemPrompt },
           { role: "user", content: ChatPrompt },

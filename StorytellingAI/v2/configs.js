@@ -8,7 +8,9 @@ const configs = {
     SystemPrompt: "chat/system.txt",
   },
   StabilityAI: {
-    Endpoint:
+    EndpointXL:
+      "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v0-9/text-to-image",
+    EndpointLegacy:
       "https://api.stability.ai/v1/generation/stable-diffusion-768-v2-1/text-to-image",
     Secret: process.env.STABILITYAI_SECRET,
     StylePreset: "cinematic",
@@ -35,7 +37,7 @@ const configs = {
       Stability: "1.0",
       Similarity: "1.0",
     },
-  }
+  },
 };
 
 module.exports = configs;

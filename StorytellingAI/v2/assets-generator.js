@@ -69,7 +69,7 @@ async function GenerateImage(imgPrompt, idx) {
     // Query StableDiffusion API with img prompt > get images
     // https://stability.ai/
     // https://www.pixelconverter.com/aspect-ratio-to-pixels-converter/
-    const StabilityAIEndpoint = configs.StabilityAI.Endpoint;
+    const StabilityAIEndpoint = configs.StabilityAI.EndpointLegacy;
     const StabilityAISecret = configs.StabilityAI.Secret;
     const options = {
       method: "POST",
@@ -114,7 +114,7 @@ async function GenerateImage(imgPrompt, idx) {
     );
     console.log("Img Asset Generated");
   } catch (ex) {
-    console.log("Error in Stability AI: " + ex.response.data.message);
+    console.log("Error in Stability AI: " + ex.response);
   }
 }
 

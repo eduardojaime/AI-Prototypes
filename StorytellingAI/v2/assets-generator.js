@@ -4,10 +4,19 @@ const configs = require("./configs");
 const axios = require("axios");
 const fs = require("fs");
 
-async function GenerateAssets(skipCSV, skipImg, skipAudio) {
+async function GenerateAssets(skipCSV, skipImg, skipAudio, language) {
   // Pipeline starts
   // Query OpenAI text generation > get img prompt and script
   let csv = "";
+  // Languages supported so far: EN, ES
+  let outputFilename = "output/response.csv";
+  // select language to generate
+  if (language == "EN") {
+    outputFilename = "output/response-en.csv";
+  } else if (language == "ES") {
+    outputFilename = "output/response-es.csv";
+  }
+
   const OpenAIEndpoint = configs.OpenAI.Endpoint;
   const OpenAISecret = configs.OpenAI.Secret;
   const ChatPrompt = fs.readFileSync(configs.OpenAI.ChatPrompt, "utf-8");
@@ -32,10 +41,10 @@ async function GenerateAssets(skipCSV, skipImg, skipAudio) {
     };
     let resp = await axios.request(options);
     csv = resp.data.choices[0].message.content;
-    fs.writeFileSync("output/response.csv", csv);
+    fs.writeFileSync(outputFilename, csv);
     console.log("CSV created, now processing");
   } else {
-    csv = fs.readFileSync("output/response.csv", "utf-8");
+    csv = fs.readFileSync(outputFilename, "utf-8");
   }
 
   // Process CSV

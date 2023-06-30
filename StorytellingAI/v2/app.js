@@ -23,6 +23,21 @@ prompt.start();
 
 async function main() {
   let skipCSV = false;
+  let language = "EN"; // default english
+  let langChoice = await GetAnswer(
+    "Choose your Language: enter EN for English or ES for Spanish"
+    );
+  if (langChoice == "EN") {
+    console.log("English Language Selected");
+    language = "EN";
+  }
+  else if (langChoice == "ES") {
+    console.log("Spanish Language Selected");
+    language = "ES";
+  }
+  else {
+    console.log("No language selected. Default set to English.");    
+  }
 
   let generateCSV = await GetAnswer(
     "Do you want to generate a CSV file with the script?"
@@ -35,7 +50,7 @@ async function main() {
     skipCSV = true;
   }
 
-  await assets(skipCSV, true, true); // generate CSV
+  await assets(skipCSV, true, true, language); // generate CSV
   let verified = await GetAnswer(
     "Is the CSV file in the correct format? Press Y to confirm."
   );
@@ -45,7 +60,7 @@ async function main() {
     );
     if (generateImages == "Y") {
       console.log("OK - Generating Image files");
-      await assets(true, false, true);
+      await assets(true, false, true, language);
     } else {
       console.log(
         "Skipping image assets generation, utilizing existing assets."
@@ -54,7 +69,7 @@ async function main() {
     let generateAudio = await GetAnswer("Do you want to generate audio files?");
     if (generateAudio == "Y") {
       console.log("OK - Generating Audio files");
-      await assets(true, true, false);
+      await assets(true, true, false, language);
     } else {
       console.log(
         "Skipping audio asset generation, utilizing existing assets."

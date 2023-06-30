@@ -1,15 +1,15 @@
+// Custom modules
 const generate_images = require("./assets-generator-image");
 const generate_audio = require("./assets-generator-audio");
 const generate_script = require("./assets-generator-script");
 const generate_video = require("./assets-generator-video");
-
+// Required npm modules
 const prompt = require("prompt");
 const fs = require("fs");
 const path = require("path");
+// Global variables
 const folderPath = "./output";
 const outputFolder = path.join(__dirname, "output");
-
-// Global variables
 let finalOutput = "";
 let finalOutputWithBgSound = "";
 let audioFiles = [];

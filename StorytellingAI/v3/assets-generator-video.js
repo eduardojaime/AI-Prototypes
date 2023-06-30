@@ -2,10 +2,20 @@
 const fs = require("fs");
 const path = require("path");
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
+const ffprobePath = require("@ffprobe-installer/ffprobe").path;
 const ffmpeg = require("fluent-ffmpeg");
-const mm = require("music-metadata");
-
+const musicMetadata = require('music-metadata');
+// const mm = require("music-metadata");
+// import * as mm from 'music-metadata';
 ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
+
+
+async function getDuration(filePath) {
+  const metadata = await musicMetadata.parseFile(filePath);
+  console.log('Duration:', metadata.format.duration);
+  return metadata.format.duration;
+}
 
 async function processFiles(
   audioFiles,
@@ -55,14 +65,12 @@ async function processFiles(
 async function mergeAudioAndImages(audioPath, imagePath, outputPath) {
   console.log("Merging Audio and Files");
 
-  const metadata = await mm.parseFile(audioPath);
-  // console.log(metadata);
-  let duration = metadata.format.duration;
+  let duration = await getDuration(audioPath);
 
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input(imagePath)
-      .loop(duration)
+      .loop(duration) // needs duration value to work to avoid skipping in YT
       .input(audioPath)
       .videoCodec("libx264")
       .outputOption("-tune stillimage")
@@ -112,13 +120,12 @@ async function addBackgroundEffect(
   backgroundFile,
   finalOutputWithBgSound
 ) {
-  const metadata = await mm.parseFile(finalOutput);
-  let duration = metadata.format.duration;
+  // let duration = getDuration(finalOutput);
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input(finalOutput)
       .input(backgroundFile) // background audio file
-      // .loop(duration) not found needs rework
+      // .loop(duration) // not found needs rework
       // removing these  as these are already set during merging
       // .outputOptions("-c:v copy") // copy video codec
       // .outputOptions("-c:a aac") // encode audio to AAC

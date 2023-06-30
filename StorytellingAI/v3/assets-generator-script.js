@@ -16,13 +16,14 @@ async function GenerateScript(generateScript, language) {
   } else if (language == "ES") {
     outputFilename = "output/response-es.csv";
   }
-  const OpenAIEndpoint = configs.OpenAI.Endpoint;
-  const OpenAISecret = configs.OpenAI.Secret;
-
-  const ChatPrompt = fs.readFileSync(configs.OpenAI.ChatPrompt, "utf-8");
-  const SystemPrompt = fs.readFileSync(configs.OpenAI.SystemPrompt, "utf-8");
-
   if (generateScript) {
+    
+    const OpenAIEndpoint = configs.OpenAI.Endpoint;
+    const OpenAISecret = configs.OpenAI.Secret;
+  
+    const ChatPrompt = fs.readFileSync(configs.OpenAI.ChatPrompt, "utf-8");
+    const SystemPrompt = fs.readFileSync(configs.OpenAI.SystemPrompt, "utf-8");
+  
     console.log("Generating Script");
     const options = {
       method: "POST",

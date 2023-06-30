@@ -100,14 +100,13 @@ async function Main() {
   );
   if (generateScriptAnswer == "Y") {
     console.log("Generating CSV file with the script");
-    generateScript = false;
+    generateScript = true;
   } else {
     console.log("Skipping CSV generation, utilizing existing CSV script.");
-    generateScript = true;
+    generateScript = false;
   }
 
   let script = await generate_script(generateScript, language);
-  console.log(script); // testing
 
   let verifiedScriptAnswer = await GetAnswer(
     "Is the Script file in the correct format? Press Y to confirm."
@@ -119,7 +118,7 @@ async function Main() {
     if (generateImagesAnswer == "Y") {
       console.log("OK - Generating Image files");
       // TODO improve file generation
-      ProcessScript(script, false, true);
+      await ProcessScript(script, false, true);
     } else {
       console.log(
         "Skipping image assets generation, utilizing existing assets."
@@ -132,7 +131,7 @@ async function Main() {
     if (generateAudioAnswer == "Y") {
       console.log("OK - Generating Audio files");
       // TODO improve file generation
-      ProcessScript(script, true, false);
+      await ProcessScript(script, true, false);
     } else {
       console.log(
         "Skipping audio asset generation, utilizing existing assets."

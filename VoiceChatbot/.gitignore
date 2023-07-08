@@ -6,6 +6,7 @@
 .env
 *.mp3
 *.wav
+*.txt
 
 # User-specific files
 *.rsuser

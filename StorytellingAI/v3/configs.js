@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+// Stability AI 
+// https://api.stability.ai/docs#tag/v1generation/operation/textToImage
 const configs = {
   OpenAI: {
     Endpoint: "https://api.openai.com/v1/chat/completions",

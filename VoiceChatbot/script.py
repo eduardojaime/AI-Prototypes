@@ -1,15 +1,12 @@
 import sounddevice as sd
 import soundfile as sf
-import numpy as np
+import requests
+import winsound
 import openai
 import os
-import requests
 import re
 from colorama import Fore, Style, init
-import datetime
-import base64
 from pydub import AudioSegment
-from pydub.playback import play
 from dotenv import load_dotenv
 
 # load .env variables
@@ -23,6 +20,8 @@ init()
 openai_key = os.getenv('OPENAI_SECRET')
 eleven_labs_key = os.getenv('ELEVENLABS_SECRET')
 voice_id = '21m00Tcm4TlvDq8ikWAM'
+# voice_id = 'XgemEVqDkz11K6s6rSgO' 
+record = True
 
 conversation1 = []  
 system_prompt = open_file('system_prompt.txt')
@@ -52,24 +51,27 @@ def text_to_speech(text):
     }
     data = {
         'text': text,
-        'model_id': 'eleven_monolingual_v1',
+        'model_id': 'eleven_monolingual_v1', # 'eleven_multilingual_v1',
         'voice_settings': {
-            'stability': 0.6,
-            'similarity_boost': 0.85
+            'stability': 0.5,
+            'similarity_boost': 0.75
         }
     }
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         with open('output.mp3', 'wb') as f:
             f.write(response.content)
-        audio = AudioSegment.from_mp3('output.mp3')
-        play(audio)
+            f.close() # close the file stream
+        sound = AudioSegment.from_mp3('output.mp3')
+        sound.export('output.wav', format="wav") # export to wav in order to use winsound playback
+        filename = 'output.wav'
+        winsound.PlaySound(filename, winsound.SND_FILENAME)
     else:
         print('Error:', response.text)
 
 def print_colored(agent, text):
     agent_colors = {
-        "Julie:": Fore.YELLOW,
+        "TutorAI": Fore.YELLOW,
     }
     color = agent_colors.get(agent, "")
     print(color + f"{agent}: {text}" + Style.RESET_ALL, end="")
@@ -88,9 +90,13 @@ def record_and_transcribe(duration=8, fs=44100):
     transcription = result['text']
     return transcription
 
-while True:
-    user_message = record_and_transcribe()
-    response = chatgpt(conversation1, system_prompt, user_message)
-    print_colored("ChatHelp:", f"{response}\n\n")
-    user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
-    text_to_speech(user_message_without_generate_image)
+while record:
+    user_input = input("To ask a question press 'Y'...")
+    if (user_input.capitalize() == 'Y') :
+        user_message = record_and_transcribe()
+        response = chatgpt(conversation1, system_prompt, user_message)
+        print_colored("TutorAI", f"{response}\n\n")
+        user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
+        text_to_speech(user_message_without_generate_image)
+    else : 
+        record = False

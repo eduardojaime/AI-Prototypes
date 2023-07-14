@@ -4,16 +4,17 @@ const configs = require("./configs");
 const axios = require("axios");
 const fs = require("fs");
 
-async function GenerateAudio(audioPrompt, idx) {
+async function GenerateAudio(audioPrompt, idx, language) {
   try {
     // https://api.elevenlabs.io/docs
     // Query ElevenLabs API with script > get voice recordings
     const ElevenLabsEndpoint = configs.ElevenLabs.Endpoint;
     const ElevenLabsSecret = configs.ElevenLabs.Secret;
+    const VoiceId = configs.ElevenLabs.VoiceId;
     // new code
     const options = {
       method: "POST",
-      url: `${ElevenLabsEndpoint}`, // Includes VoiceId
+      url: `${ElevenLabsEndpoint}/${VoiceId}`, // Includes VoiceId
       headers: {
         "xi-api-key": `${ElevenLabsSecret}`, // Set the API key in the headers.
         accept: "audio/mpeg", // Set the expected response type to audio/mpeg.
@@ -32,7 +33,7 @@ async function GenerateAudio(audioPrompt, idx) {
     // Send the API request using Axios and wait for the response.
     const audioResp = await axios.request(options);
     fs.writeFileSync(
-      `output/audio-${idx.toString().padStart(2, 0)}.mp3`,
+      `output/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`,
       audioResp.data
     );
     console.log("Audio Asset Generated");

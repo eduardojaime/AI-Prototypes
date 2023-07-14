@@ -121,7 +121,7 @@ async function Main() {
     if (generateImagesAnswer == "Y") {
       console.log("OK - Generating Image files");
       // TODO improve file generation
-      await ProcessScript(script, false, true);
+      await ProcessScript(script, false, true, language);
     } else {
       console.log(
         "Skipping image assets generation, utilizing existing assets."
@@ -134,7 +134,7 @@ async function Main() {
     if (generateAudioAnswer == "Y") {
       console.log("OK - Generating Audio files");
       // TODO improve file generation
-      await ProcessScript(script, true, false);
+      await ProcessScript(script, true, false, language);
     } else {
       console.log(
         "Skipping audio asset generation, utilizing existing assets."
@@ -149,7 +149,7 @@ async function Main() {
   }
 }
 // Process CSV
-async function ProcessScript(script, skipImg, skipAudio) {
+async function ProcessScript(script, skipImg, skipAudio, language) {
   let arr = script.split(/\r\n|\r|\n/);
   let idx = 1;
   for (const val of arr) {
@@ -167,7 +167,7 @@ async function ProcessScript(script, skipImg, skipAudio) {
       if (!skipAudio) {
         let audioPrompt = row[audioIdx]; // "There was a young man named Jorge who lived in a small town on the outskirts of Ciudad Juarez.";
         console.log("Generating Audio Asset " + idx);
-        await generate_audio(audioPrompt, idx);
+        await generate_audio(audioPrompt, idx, language);
       }
 
       idx++;

@@ -2,6 +2,5 @@
 
 Objectives:
 
-- Multi-language Support
-- Refactor Modules for better reusability
-- Publish as Service
+- [x] Multi-language Support
+- [x] Refactor Modules for better reusability

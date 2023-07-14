@@ -30,7 +30,7 @@ const configs = {
   },
   ElevenLabs: {
     Endpoint:
-      "https://api.elevenlabs.io/v1/text-to-speech/RMSpIJWPsZD2Oq4s7dTo",
+      "https://api.elevenlabs.io/v1/text-to-speech",
     Secret: process.env.ELEVENLABS_SECRET,
     VoiceId: "RMSpIJWPsZD2Oq4s7dTo",
     MonolingualModelId: "eleven_monolingual_v1",

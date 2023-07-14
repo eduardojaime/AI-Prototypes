@@ -5,8 +5,6 @@ const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 const ffprobePath = require("@ffprobe-installer/ffprobe").path;
 const ffmpeg = require("fluent-ffmpeg");
 const musicMetadata = require('music-metadata');
-// const mm = require("music-metadata");
-// import * as mm from 'music-metadata';
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 

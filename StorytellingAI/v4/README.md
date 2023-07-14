@@ -1,7 +1,7 @@
-# StorytellingAI v3
+# StorytellingAI v4
 
 Objectives:
 
-- Multi-language Support
-- Refactor Modules for better reusability
-- Publish as Service
+- [ ] Multi-language Support
+- [ ] Single run generation of two videos
+- [ ] Publish as a service

@@ -14,89 +14,19 @@ let finalOutput = "";
 let finalOutputWithBgSound = "";
 let audioFiles = [];
 let imageFiles = [];
-let audioIdx = 0; // EN
 
 async function Setup() {
   fs.mkdirSync(outputFolder, { recursive: true });
   prompt.start();
   audioFiles = [];
   imageFiles = [];
-  finalOutput = path.join(
-    outputFolder,
-    `final_output_${Math.floor(Date.now() / 1000)}.mp4`
-  );
-  finalOutputWithBgSound = path.join(
-    outputFolder,
-    `final_output_${Math.floor(Date.now() / 1000)}_background.mp4`
-  );
-}
-
-async function GetAnswer(question) {
-  console.log(question);
-  const { answer } = await prompt.get(["answer"]);
-  return answer.toUpperCase();
-}
-
-async function GenerateVideoOutput() {
-  let generateVideoAnswer = await GetAnswer(
-    "Do you want to generate video? Press Y to confirm."
-  );
-  if (generateVideoAnswer == "Y") {
-    console.log("Asset generation complete, generating Video now");
-    files = fs.readdirSync(folderPath);
-
-    const pngFiles = files.filter(
-      (file) => path.extname(file).toLowerCase() === ".png"
-    );
-    const pngFilePaths = pngFiles.map((file) => path.join(folderPath, file));
-    imageFiles = pngFilePaths;
-
-    const mpegFiles = files.filter(
-      (file) =>
-        path.extname(file).toLowerCase() === ".mp3" &&
-        path.basename(file) !== "background.mp3"
-    );
-    const mpegFilePaths = mpegFiles.map((file) => path.join(folderPath, file));
-    audioFiles = mpegFilePaths;
-
-    if (imageFiles.length == audioFiles.length && imageFiles.length > 0) {
-      console.log("Images and Audio files match");
-      await generate_video(
-        audioFiles,
-        imageFiles,
-        outputFolder,
-        finalOutput,
-        finalOutputWithBgSound
-      );
-    } else {
-      console.log(
-        "Process will not start. Mismatch between image and audio files."
-      );
-    }
-  } else {
-    console.log("Stopping Execution");
-    return;
-  }
 }
 
 async function Main() {
   Setup();
   let generateScript = false;
   let language = "EN"; // default english
-  let languageAnswer = await GetAnswer(
-    "Choose your Language: enter EN for English or ES for Spanish"
-  );
-  if (languageAnswer == "EN") {
-    console.log("English Language Selected");
-    language = "EN";
-    audioIdx = 0;
-  } else if (languageAnswer == "ES") {
-    console.log("Spanish Language Selected");
-    language = "ES";
-    audioIdx = 1;
-  } else {
-    console.log("No language selected. Default set to English.");
-  }
+  let audioIdx = 0; // EN
 
   let generateScriptAnswer = await GetAnswer(
     "Do you want to generate a CSV file with the script?"
@@ -121,35 +51,57 @@ async function Main() {
     if (generateImagesAnswer == "Y") {
       console.log("OK - Generating Image files");
       // TODO improve file generation
-      await ProcessScript(script, false, true, language);
+      await ProcessScript(script, false, true, "", -1);
     } else {
       console.log(
         "Skipping image assets generation, utilizing existing assets."
       );
     }
 
-    let generateAudioAnswer = await GetAnswer(
-      "Do you want to generate audio files?"
+    let generateAudioAnswerEN = await GetAnswer(
+      "Do you want to generate audio files? (EN)"
     );
-    if (generateAudioAnswer == "Y") {
-      console.log("OK - Generating Audio files");
-      // TODO improve file generation
-      await ProcessScript(script, true, false, language);
+    if (generateAudioAnswerEN == "Y") {
+      console.log("OK - Generating Audio files (EN)");
+      language = "EN";
+      audioIdx = 0;
+      await ProcessScript(script, true, false, language, audioIdx);
     } else {
       console.log(
-        "Skipping audio asset generation, utilizing existing assets."
+        "Skipping audio asset generation (EN), utilizing existing assets."
+      );
+    }
+    let generateAudioAnswerES = await GetAnswer(
+      "Do you want to generate audio files? (ES)"
+    );
+    if (generateAudioAnswerES == "Y") {
+      console.log("OK - Generating Audio files (ES)");
+      language = "ES";
+      audioIdx = 1;
+      await ProcessScript(script, true, false, language, audioIdx);
+    } else {
+      console.log(
+        "Skipping audio asset generation (ES), utilizing existing assets."
       );
     }
 
     // Generate Video Output
-    await GenerateVideoOutput();
+    
+    await GenerateVideoOutput("EN");
+    await GenerateVideoOutput("ES");
   } else {
     console.log("Stopping Execution");
     return;
   }
 }
-// Process CSV
-async function ProcessScript(script, skipImg, skipAudio, language) {
+
+async function GetAnswer(question) {
+  console.log(question);
+  const { answer } = await prompt.get(["answer"]);
+  return answer.toUpperCase();
+}
+
+async function ProcessScript(script, skipImg, skipAudio, language, audioIdx) {
   let arr = script.split(/\r\n|\r|\n/);
   let idx = 1;
   for (const val of arr) {
@@ -172,6 +124,59 @@ async function ProcessScript(script, skipImg, skipAudio, language) {
 
       idx++;
     }
+  }
+}
+
+async function GenerateVideoOutput(language) {
+  finalOutput = path.join(
+    outputFolder,
+    `final_output_${Math.floor(Date.now() / 1000)}_${language}.mp4`
+  );
+  finalOutputWithBgSound = path.join(
+    outputFolder,
+    `final_output_${Math.floor(Date.now() / 1000)}_background_${language}.mp4`
+  );
+
+  let generateVideoAnswer = await GetAnswer(
+    `Do you want to generate video? (${language}) Press Y to confirm.`
+  );
+  if (generateVideoAnswer == "Y") {
+    console.log("Asset generation complete, generating Video now");
+    files = fs.readdirSync(folderPath);
+
+    const pngFiles = files.filter(
+      (file) => path.extname(file).toLowerCase() === ".png"
+    );
+    const pngFilePaths = pngFiles.map((file) => path.join(folderPath, file));
+    imageFiles = pngFilePaths;
+
+    const mpegFiles = files.filter(
+      (file) =>
+        path.extname(file).toLowerCase() === ".mp3" &&
+        path.basename(file) !== "background.mp3" &&
+        path.basename(file).includes(language)
+    );
+    console.log(mpegFiles);
+    const mpegFilePaths = mpegFiles.map((file) => path.join(folderPath, file));
+    audioFiles = mpegFilePaths;
+
+    if (imageFiles.length == audioFiles.length && imageFiles.length > 0) {
+      console.log("Images and Audio files match");
+      await generate_video(
+        audioFiles,
+        imageFiles,
+        outputFolder,
+        finalOutput,
+        finalOutputWithBgSound
+      );
+    } else {
+      console.log(
+        "Process will not start. Mismatch between image and audio files."
+      );
+    }
+  } else {
+    console.log("Stopping Execution");
+    return;
   }
 }
 

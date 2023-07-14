@@ -6,6 +6,7 @@ const fs = require("fs");
 
 async function GenerateImage(imgPrompt, idx) {
   try {
+    // to skip if (idx < 10) return;
     // Query StableDiffusion API with img prompt > get images
     // https://stability.ai/
     // https://www.pixelconverter.com/aspect-ratio-to-pixels-converter/

@@ -14,6 +14,7 @@ let finalOutput = "";
 let finalOutputWithBgSound = "";
 let audioFiles = [];
 let imageFiles = [];
+let isShort = false;
 
 async function Setup() {
   fs.mkdirSync(outputFolder, { recursive: true });
@@ -27,6 +28,15 @@ async function Main() {
   let generateScript = false;
   let language = "EN"; // default english
   let audioIdx = 0; // EN
+
+  let isShortAnswer = await GetAnswer("Is this a YouTube Short?");
+  if (isShortAnswer == "Y") {
+    console.log("Short Format Selected (Vertical Video)");
+    isShort = true;
+  } else {
+    console.log("Long Format Selected (Horizontal Video)");
+    isShort = false;
+  }
 
   let generateScriptAnswer = await GetAnswer(
     "Do you want to generate a CSV file with the script?"
@@ -50,7 +60,6 @@ async function Main() {
     );
     if (generateImagesAnswer == "Y") {
       console.log("OK - Generating Image files");
-      // TODO improve file generation
       await ProcessScript(script, false, true, "", -1);
     } else {
       console.log(
@@ -84,9 +93,7 @@ async function Main() {
         "Skipping audio asset generation (ES), utilizing existing assets."
       );
     }
-
     // Generate Video Output
-    
     await GenerateVideoOutput("EN");
     await GenerateVideoOutput("ES");
   } else {
@@ -113,7 +120,7 @@ async function ProcessScript(script, skipImg, skipAudio, language, audioIdx) {
       if (!skipImg) {
         let imgPrompt = row[2]; // "A dark and eerie factory with smoke billowing out of the chimneys in the middle of a deserted town.";
         console.log("Generating Img Asset " + idx);
-        await generate_images(imgPrompt, idx);
+        await generate_images(imgPrompt, idx, isShort);
       }
 
       if (!skipAudio) {
@@ -167,7 +174,8 @@ async function GenerateVideoOutput(language) {
         imageFiles,
         outputFolder,
         finalOutput,
-        finalOutputWithBgSound
+        finalOutputWithBgSound,
+        isShort
       );
     } else {
       console.log(

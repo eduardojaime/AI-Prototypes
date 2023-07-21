@@ -4,14 +4,16 @@ const path = require("path");
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 const ffprobePath = require("@ffprobe-installer/ffprobe").path;
 const ffmpeg = require("fluent-ffmpeg");
-const musicMetadata = require('music-metadata');
+const musicMetadata = require("music-metadata");
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
+const verticalScale = "scale=1080:1920";
+const horizontalScale = "scale=1920:1080";
 
 async function getDuration(filePath) {
   const metadata = await musicMetadata.parseFile(filePath);
-  console.log('Duration:', metadata.format.duration);
+  console.log("Duration:", metadata.format.duration);
   return metadata.format.duration;
 }
 
@@ -20,7 +22,8 @@ async function processFiles(
   imageFiles,
   outputFolder,
   finalOutput,
-  finalOutputWithBgSound
+  finalOutputWithBgSound,
+  isShort
 ) {
   let backgroundSound = path.join(__dirname, "output/background.mp3");
   console.log("Starting Processing");
@@ -29,6 +32,8 @@ async function processFiles(
     console.error("The number of audio files and image files should be equal");
     return;
   }
+
+  let selectedScale = isShort ? verticalScale : horizontalScale;
 
   const videoFiles = [];
 
@@ -40,7 +45,12 @@ async function processFiles(
     const outputPath = path.join(outputFolder, `output_${i + 1}.mp4`);
 
     try {
-      await mergeAudioAndImages(audioPath, imagePath, outputPath);
+      await mergeAudioAndImages(
+        audioPath,
+        imagePath,
+        outputPath,
+        selectedScale
+      );
       videoFiles.push(outputPath);
     } catch (error) {
       console.error("Error processing files:", error.message);
@@ -60,7 +70,12 @@ async function processFiles(
   }
 }
 
-async function mergeAudioAndImages(audioPath, imagePath, outputPath) {
+async function mergeAudioAndImages(
+  audioPath,
+  imagePath,
+  outputPath,
+  selectedScale
+) {
   console.log("Merging Audio and Files");
 
   let duration = await getDuration(audioPath);
@@ -76,7 +91,7 @@ async function mergeAudioAndImages(audioPath, imagePath, outputPath) {
       .audioBitrate("192k")
       .outputOptions("-pix_fmt yuv420p")
       .outputOptions("-shortest")
-      .videoFilters("scale=1920:1080")
+      .videoFilters(selectedScale)
       .save(outputPath)
       .on("end", () => {
         console.log("Merging completed: " + outputPath);
@@ -98,8 +113,8 @@ async function concatVideos(videoFiles, finalOutput) {
     ffmpeg()
       .input(concatListPath)
       .inputOptions(["-f concat", "-safe 0"])
-      // .outputOptions(["-c:v libx264", "-c:a aac"]) // try re-encoding your video to use the H.264 video codec and AAC audio codec if not already using them, as these are widely supported and recommended by YouTube
-      // .outputOptions("-c copy") // This option, which simply copies the input streams to the output. This is fast and doesn't degrade quality, but it might not handle concatenation of dissimilar files well. Try removing this option to have ffmpeg re-encode the streams during concatenation, which might result in better handling of the audio transition
+      // Append 2 seconds of silence to the output audio stream
+      .outputOptions(["-af apad=pad_len=88200"])
       .save(finalOutput)
       .on("end", () => {
         console.log("Concatenation completed: " + finalOutput);
@@ -122,14 +137,13 @@ async function addBackgroundEffect(
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input(finalOutput)
-      .input(backgroundFile) // background audio file
-      // .loop(duration) // not found needs rework
-      // removing these  as these are already set during merging
-      // .outputOptions("-c:v copy") // copy video codec
-      // .outputOptions("-c:a aac") // encode audio to AAC
-      .outputOptions(["-c:v libx264", "-c:a aac"]) // try re-encoding your video to use the H.264 video codec and AAC audio codec if not already using them, as these are widely supported and recommended by YouTube
+      // background audio file
+      .input(backgroundFile)
+      // try re-encoding your video to use the H.264 video codec and AAC audio codec
+      // if not already using them, as these are widely supported and recommended by YouTube
+      .outputOptions(["-c:v libx264", "-c:a aac"])
       .complexFilter([
-        "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file) by half
+        "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file)
         "[0:a][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
       ])
       .outputOptions(["-map 0:v", "-map [a]"])
@@ -145,6 +159,4 @@ async function addBackgroundEffect(
   });
 }
 
-// fs.mkdirSync(outputFolder, { recursive: true });
-// processFiles(audioFiles, imageFiles, outputFolder, finalOutput);
 module.exports = processFiles;

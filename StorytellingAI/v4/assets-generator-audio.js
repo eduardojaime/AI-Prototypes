@@ -4,13 +4,13 @@ const configs = require("./configs");
 const axios = require("axios");
 const fs = require("fs");
 
-async function GenerateAudio(audioPrompt, idx, language) {
+async function GenerateAudio(audioPrompt, idx, language, isMale) {
   try {
     // https://api.elevenlabs.io/docs
     // Query ElevenLabs API with script > get voice recordings
     const ElevenLabsEndpoint = configs.ElevenLabs.Endpoint;
     const ElevenLabsSecret = configs.ElevenLabs.Secret;
-    const VoiceId = configs.ElevenLabs.VoiceId;
+    const VoiceId = (isMale) ? configs.ElevenLabs.MaleVoiceId : configs.ElevenLabs.FemaleVoiceId;
     // new code
     const options = {
       method: "POST",

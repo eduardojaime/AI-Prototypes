@@ -9,7 +9,9 @@ const fs = require("fs");
 const path = require("path");
 // Global variables
 const folderPath = "./output";
+const assetsFolder = "./output/longassets";
 const outputFolder = path.join(__dirname, "output");
+const outputTimeStamp = Math.floor(Date.now() / 1000);
 let finalOutput = "";
 let finalOutputWithBgSound = "";
 let audioFiles = [];
@@ -28,6 +30,14 @@ async function Main() {
   let generateScript = false;
   let language = "EN"; // default english
   let audioIdx = 0; // EN
+  let isMale = await GetAnswer("Is this a Male narration?");
+  if (isShortAnswer == "Y") {
+    console.log("Male Voice Selected");
+    isMale = true;
+  } else {
+    console.log("Female Voice Selected");
+    isMale = false;
+  }
 
   let isShortAnswer = await GetAnswer("Is this a YouTube Short?");
   if (isShortAnswer == "Y") {
@@ -60,7 +70,7 @@ async function Main() {
     );
     if (generateImagesAnswer == "Y") {
       console.log("OK - Generating Image files");
-      await ProcessScript(script, false, true, "", -1);
+      await ProcessScript(script, false, true, "", -1, false);
     } else {
       console.log(
         "Skipping image assets generation, utilizing existing assets."
@@ -74,7 +84,7 @@ async function Main() {
       console.log("OK - Generating Audio files (EN)");
       language = "EN";
       audioIdx = 0;
-      await ProcessScript(script, true, false, language, audioIdx);
+      await ProcessScript(script, true, false, language, audioIdx, isMale);
     } else {
       console.log(
         "Skipping audio asset generation (EN), utilizing existing assets."
@@ -87,7 +97,7 @@ async function Main() {
       console.log("OK - Generating Audio files (ES)");
       language = "ES";
       audioIdx = 1;
-      await ProcessScript(script, true, false, language, audioIdx);
+      await ProcessScript(script, true, false, language, audioIdx, isMale);
     } else {
       console.log(
         "Skipping audio asset generation (ES), utilizing existing assets."
@@ -96,6 +106,9 @@ async function Main() {
     // Generate Video Output
     await GenerateVideoOutput("EN");
     await GenerateVideoOutput("ES");
+
+    await CleanUp();
+
   } else {
     console.log("Stopping Execution");
     return;
@@ -108,7 +121,7 @@ async function GetAnswer(question) {
   return answer.toUpperCase();
 }
 
-async function ProcessScript(script, skipImg, skipAudio, language, audioIdx) {
+async function ProcessScript(script, skipImg, skipAudio, language, audioIdx, isMale) {
   let arr = script.split(/\r\n|\r|\n/);
   let idx = 1;
   for (const val of arr) {
@@ -126,7 +139,7 @@ async function ProcessScript(script, skipImg, skipAudio, language, audioIdx) {
       if (!skipAudio) {
         let audioPrompt = row[audioIdx]; // "There was a young man named Jorge who lived in a small town on the outskirts of Ciudad Juarez.";
         console.log("Generating Audio Asset " + idx);
-        await generate_audio(audioPrompt, idx, language);
+        await generate_audio(audioPrompt, idx, language, isMale);
       }
 
       idx++;
@@ -137,11 +150,11 @@ async function ProcessScript(script, skipImg, skipAudio, language, audioIdx) {
 async function GenerateVideoOutput(language) {
   finalOutput = path.join(
     outputFolder,
-    `final_output_${Math.floor(Date.now() / 1000)}_${language}.mp4`
+    `final_output_${outputTimeStamp}_${language}.mp4`
   );
   finalOutputWithBgSound = path.join(
     outputFolder,
-    `final_output_${Math.floor(Date.now() / 1000)}_background_${language}.mp4`
+    `final_output_${outputTimeStamp}_background_${language}.mp4`
   );
 
   let generateVideoAnswer = await GetAnswer(
@@ -186,6 +199,33 @@ async function GenerateVideoOutput(language) {
     console.log("Stopping Execution");
     return;
   }
+}
+
+async function CleanUp() {
+  let videoFolder = `./${folderPath}/${outputTimeStamp}`;
+  // copy output files to its own folder
+  if (!fs.existsSync(videoFolder)) {
+    fs.mkdirSync(videoFolder);
+  }
+  const files = fs.readdirSync(outputFolder);
+  files.forEach((file) => {
+    const sourceFile = path.join(outputFolder, file);
+    const targetFile = path.join(videoFolder, file);
+    const isDirectory = fs.statSync(sourceFile).isDirectory();
+    if (!isDirectory) {
+      fs.renameSync(sourceFile, targetFile);
+    }
+  });
+  console.log("Moved output files to video folder named: " + videoFolder);
+
+  // copy files from LongAssets folder
+  const assetFiles = fs.readdirSync(assetsFolder);
+  assetFiles.forEach((file) => {
+    const sourceFile = path.join(assetsFolder, file);
+    const targetFile = path.join(outputFolder, file);
+    fs.copyFileSync(sourceFile, targetFile);
+  });
+  console.log("Restored Initial Files");
 }
 
 Main();

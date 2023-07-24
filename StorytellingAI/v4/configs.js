@@ -34,7 +34,8 @@ const configs = {
     Endpoint:
       "https://api.elevenlabs.io/v1/text-to-speech",
     Secret: process.env.ELEVENLABS_SECRET,
-    VoiceId: "RMSpIJWPsZD2Oq4s7dTo",
+    MaleVoiceId: "RMSpIJWPsZD2Oq4s7dTo",
+    FemaleVoiceId: "<TODO>",
     MonolingualModelId: "eleven_monolingual_v1",
     MultilingualModelId: "eleven_multilingual_v1",
     VoiceSettings: {

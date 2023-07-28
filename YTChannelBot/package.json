@@ -1,0 +1,15 @@
+{
+  "name": "ytchannelbot",
+  "version": "1.0.0",
+  "description": "YouTube Channel Bot for misc functions",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eduardo Jaime",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "googleapis": "^122.0.0"
+  }
+}

@@ -30,13 +30,14 @@ async function Main() {
   let generateScript = false;
   let language = "EN"; // default english
   let audioIdx = 0; // EN
-  let isMale = await GetAnswer("Is this a Male narration?");
-  if (isShortAnswer == "Y") {
-    console.log("Male Voice Selected");
-    isMale = true;
-  } else {
+  // const isMale = (await GetAnswer("Is this a Male narration?")) === "Y" ? (console.log("Male Voice Selected"), true) : (console.log("Female Voice Selected"), false);
+  let isFemaleMaleAnswer = await GetAnswer("Is this a Female narration?");
+  if (isFemaleMaleAnswer == "Y") {
     console.log("Female Voice Selected");
     isMale = false;
+  } else {
+    console.log("Male Voice Selected");
+    isMale = true;
   }
 
   let isShortAnswer = await GetAnswer("Is this a YouTube Short?");

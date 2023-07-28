@@ -19,8 +19,8 @@ init()
 
 openai_key = os.getenv('OPENAI_SECRET')
 eleven_labs_key = os.getenv('ELEVENLABS_SECRET')
-voice_id = '21m00Tcm4TlvDq8ikWAM'
-# voice_id = 'XgemEVqDkz11K6s6rSgO' 
+# voice_id = '21m00Tcm4TlvDq8ikWAM'
+voice_id = 'XgemEVqDkz11K6s6rSgO' 
 record = True
 
 conversation1 = []  

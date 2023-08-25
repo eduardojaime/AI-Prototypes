@@ -8,18 +8,23 @@ const prompt = require("prompt");
 const fs = require("fs");
 const path = require("path");
 // Global variables
-const folderPath = "./output";
-const assetsFolder = "./output/longassets";
-const outputFolder = path.join(__dirname, "output");
+const assetsFolder = "./input/assets";
+const longAssetsFolder = "./input/longassets";
+const shortAssetsFolder = "./input/shortassets";
+const outputFolder = "./output" // path.join(__dirname, "output");
+const inputFolder = "./input" // path.join(__dirname, "output");
 const outputTimeStamp = Math.floor(Date.now() / 1000);
 let finalOutput = "";
 let finalOutputWithBgSound = "";
+let outputFileNamePrefix = "";
 let audioFiles = [];
 let imageFiles = [];
 let isShort = false;
+let isMale = false;
 
 async function Setup() {
   fs.mkdirSync(outputFolder, { recursive: true });
+  fs.mkdirSync(inputFolder, { recursive: true });
   prompt.start();
   audioFiles = [];
   imageFiles = [];
@@ -27,93 +32,68 @@ async function Setup() {
 
 async function Main() {
   Setup();
-  let generateScript = false;
+  
   let language = "EN"; // default english
   let audioIdx = 0; // EN
-  // const isMale = (await GetAnswer("Is this a Male narration?")) === "Y" ? (console.log("Male Voice Selected"), true) : (console.log("Female Voice Selected"), false);
-  let isFemaleMaleAnswer = await GetAnswer("Is this a Female narration?");
-  if (isFemaleMaleAnswer == "Y") {
-    console.log("Female Voice Selected");
-    isMale = false;
-  } else {
-    console.log("Male Voice Selected");
-    isMale = true;
-  }
+  
+  isMale =
+    (await GetAnswer("Is this a Female narration?")) === "Y"
+      ? (console.log("Female Voice Selected"), false)
+      : (console.log("Male Voice Selected"), true);
 
-  let isShortAnswer = await GetAnswer("Is this a YouTube Short?");
-  if (isShortAnswer == "Y") {
-    console.log("Short Format Selected (Vertical Video)");
-    isShort = true;
-  } else {
-    console.log("Long Format Selected (Horizontal Video)");
-    isShort = false;
-  }
+  isShort =
+    (await GetAnswer("Is this a YouTube Short?")) === "Y"
+      ? (console.log("Short Format Selected (Vertical Video)"),
+        outputFileNamePrefix = "SHORT",
+        await RestoreFiles(shortAssetsFolder, inputFolder),
+        true)
+      : (console.log("Long Format Selected (Horizontal Video)"),
+        outputFileNamePrefix = "VIDEO",
+        await RestoreFiles(longAssetsFolder, inputFolder),
+        false);
 
-  let generateScriptAnswer = await GetAnswer(
-    "Do you want to generate a CSV file with the script?"
+  let script = await generate_script.ReadScriptFile(); // DEPRECATED >> generate_script(generateScript, language);
+
+  let generateImagesAnswer = await GetAnswer(
+    "Do you want to generate image files?"
   );
-  if (generateScriptAnswer == "Y") {
-    console.log("Generating CSV file with the script");
-    generateScript = true;
+  if (generateImagesAnswer == "Y") {
+    console.log("OK - Generating Image files");
+    await ProcessScript(script, false, true, "", -1, false);
   } else {
-    console.log("Skipping CSV generation, utilizing existing CSV script.");
-    generateScript = false;
+    console.log("Skipping image assets generation, utilizing existing assets.");
   }
 
-  let script = await generate_script(generateScript, language);
-
-  let verifiedScriptAnswer = await GetAnswer(
-    "Is the Script file in the correct format? Press Y to confirm."
+  let generateAudioAnswerEN = await GetAnswer(
+    "Do you want to generate audio files? (EN)"
   );
-  if (verifiedScriptAnswer == "Y") {
-    let generateImagesAnswer = await GetAnswer(
-      "Do you want to generate image files?"
-    );
-    if (generateImagesAnswer == "Y") {
-      console.log("OK - Generating Image files");
-      await ProcessScript(script, false, true, "", -1, false);
-    } else {
-      console.log(
-        "Skipping image assets generation, utilizing existing assets."
-      );
-    }
-
-    let generateAudioAnswerEN = await GetAnswer(
-      "Do you want to generate audio files? (EN)"
-    );
-    if (generateAudioAnswerEN == "Y") {
-      console.log("OK - Generating Audio files (EN)");
-      language = "EN";
-      audioIdx = 0;
-      await ProcessScript(script, true, false, language, audioIdx, isMale);
-    } else {
-      console.log(
-        "Skipping audio asset generation (EN), utilizing existing assets."
-      );
-    }
-    let generateAudioAnswerES = await GetAnswer(
-      "Do you want to generate audio files? (ES)"
-    );
-    if (generateAudioAnswerES == "Y") {
-      console.log("OK - Generating Audio files (ES)");
-      language = "ES";
-      audioIdx = 1;
-      await ProcessScript(script, true, false, language, audioIdx, isMale);
-    } else {
-      console.log(
-        "Skipping audio asset generation (ES), utilizing existing assets."
-      );
-    }
-    // Generate Video Output
-    await GenerateVideoOutput("EN");
-    await GenerateVideoOutput("ES");
-
-    await CleanUp();
-
+  if (generateAudioAnswerEN == "Y") {
+    console.log("OK - Generating Audio files (EN)");
+    language = "EN";
+    audioIdx = 0;
+    await ProcessScript(script, true, false, language, audioIdx, isMale);
   } else {
-    console.log("Stopping Execution");
-    return;
+    console.log(
+      "Skipping audio asset generation (EN), utilizing existing assets."
+    );
   }
+  
+  let generateAudioAnswerES = await GetAnswer(
+    "Do you want to generate audio files? (ES)"
+  );
+  if (generateAudioAnswerES == "Y") {
+    console.log("OK - Generating Audio files (ES)");
+    language = "ES";
+    audioIdx = 1;
+    await ProcessScript(script, true, false, language, audioIdx, isMale);
+  } else {
+    console.log(
+      "Skipping audio asset generation (ES), utilizing existing assets."
+    );
+  }
+  await GenerateVideoOutput("EN");
+  await GenerateVideoOutput("ES");
+  await CleanUp();
 }
 
 async function GetAnswer(question) {
@@ -122,7 +102,14 @@ async function GetAnswer(question) {
   return answer.toUpperCase();
 }
 
-async function ProcessScript(script, skipImg, skipAudio, language, audioIdx, isMale) {
+async function ProcessScript(
+  script,
+  skipImg,
+  skipAudio,
+  language,
+  audioIdx,
+  isMale
+) {
   let arr = script.split(/\r\n|\r|\n/);
   let idx = 1;
   for (const val of arr) {
@@ -151,11 +138,11 @@ async function ProcessScript(script, skipImg, skipAudio, language, audioIdx, isM
 async function GenerateVideoOutput(language) {
   finalOutput = path.join(
     outputFolder,
-    `final_output_${outputTimeStamp}_${language}.mp4`
+    `${outputFileNamePrefix}_${outputTimeStamp}_${language}.mp4`
   );
   finalOutputWithBgSound = path.join(
     outputFolder,
-    `final_output_${outputTimeStamp}_background_${language}.mp4`
+    `${outputFileNamePrefix}_${outputTimeStamp}_BG_${language}.mp4`
   );
 
   let generateVideoAnswer = await GetAnswer(
@@ -163,12 +150,12 @@ async function GenerateVideoOutput(language) {
   );
   if (generateVideoAnswer == "Y") {
     console.log("Asset generation complete, generating Video now");
-    files = fs.readdirSync(folderPath);
+    files = fs.readdirSync(outputFolder);
 
     const pngFiles = files.filter(
       (file) => path.extname(file).toLowerCase() === ".png"
     );
-    const pngFilePaths = pngFiles.map((file) => path.join(folderPath, file));
+    const pngFilePaths = pngFiles.map((file) => path.join(outputFolder, file));
     imageFiles = pngFilePaths;
 
     const mpegFiles = files.filter(
@@ -178,8 +165,9 @@ async function GenerateVideoOutput(language) {
         path.basename(file).includes(language)
     );
     console.log(mpegFiles);
-    const mpegFilePaths = mpegFiles.map((file) => path.join(folderPath, file));
+    const mpegFilePaths = mpegFiles.map((file) => path.join(outputFolder, file));
     audioFiles = mpegFilePaths;
+    console.log("Is Short: " + isShort);
 
     if (imageFiles.length == audioFiles.length && imageFiles.length > 0) {
       console.log("Images and Audio files match");
@@ -203,13 +191,13 @@ async function GenerateVideoOutput(language) {
 }
 
 async function CleanUp() {
-  let videoFolder = `./${folderPath}/${outputTimeStamp}`;
+  let videoFolder = `./${outputFolder}/${outputTimeStamp}`;
   // copy output files to its own folder
   if (!fs.existsSync(videoFolder)) {
     fs.mkdirSync(videoFolder);
   }
-  const files = fs.readdirSync(outputFolder);
-  files.forEach((file) => {
+  const outputFiles = fs.readdirSync(outputFolder);
+  outputFiles.forEach((file) => {
     const sourceFile = path.join(outputFolder, file);
     const targetFile = path.join(videoFolder, file);
     const isDirectory = fs.statSync(sourceFile).isDirectory();
@@ -217,8 +205,20 @@ async function CleanUp() {
       fs.renameSync(sourceFile, targetFile);
     }
   });
+  const inputFiles = fs.readdirSync(inputFolder);
+  inputFiles.forEach((file) => {
+    const sourceFile = path.join(inputFolder, file);
+    const targetFile = path.join(videoFolder, file);
+    const isDirectory = fs.statSync(sourceFile).isDirectory();
+    if (!isDirectory) {
+      fs.renameSync(sourceFile, targetFile);
+    }
+  });
   console.log("Moved output files to video folder named: " + videoFolder);
+  RestoreFiles(assetsFolder, inputFolder);
+}
 
+async function RestoreFiles(assetsFolder, outputFolder) {
   // copy files from LongAssets folder
   const assetFiles = fs.readdirSync(assetsFolder);
   assetFiles.forEach((file) => {

@@ -8,21 +8,18 @@ async function GenerateImage(imgPrompt, idx, isShort) {
   try {
     let selectedWidth = 0;
     let selectedHeight = 0;
-    let selectedEndpoint = "";
 
     if (isShort) {
       selectedWidth = configs.StabilityAI.ShortWidth;
       selectedHeight = configs.StabilityAI.ShortHeight;
-      selectedEndpoint = configs.StabilityAI.EndpointXL;
     } else {
       selectedWidth = configs.StabilityAI.Width;
       selectedHeight = configs.StabilityAI.Height;
-      selectedEndpoint = configs.StabilityAI.EndpointLegacy;
     }
     // Query StableDiffusion API with img prompt > get images
     // https://stability.ai/
     // https://www.pixelconverter.com/aspect-ratio-to-pixels-converter/
-    const StabilityAIEndpoint = selectedEndpoint;
+    const StabilityAIEndpoint = configs.StabilityAI.EndpointXL;
     const StabilityAISecret = configs.StabilityAI.Secret;
     const options = {
       method: "POST",

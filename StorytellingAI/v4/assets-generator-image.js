@@ -59,7 +59,7 @@ async function GenerateImage(imgPrompt, idx, isShort) {
     base64String = imgResp.data.artifacts[0].base64;
     let binaryData = Buffer.from(base64String, "base64");
     fs.writeFileSync(
-      `output/image-${idx.toString().padStart(2, 0)}.png`,
+      `input/image-${idx.toString().padStart(2, 0)}.png`,
       binaryData
     );
     console.log("Img Asset Generated");

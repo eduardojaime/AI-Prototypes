@@ -150,12 +150,12 @@ async function GenerateVideoOutput(language) {
   );
   if (generateVideoAnswer == "Y") {
     console.log("Asset generation complete, generating Video now");
-    files = fs.readdirSync(outputFolder);
+    files = fs.readdirSync(inputFolder);
 
     const pngFiles = files.filter(
       (file) => path.extname(file).toLowerCase() === ".png"
     );
-    const pngFilePaths = pngFiles.map((file) => path.join(outputFolder, file));
+    const pngFilePaths = pngFiles.map((file) => path.join(inputFolder, file));
     imageFiles = pngFilePaths;
 
     const mpegFiles = files.filter(
@@ -165,7 +165,7 @@ async function GenerateVideoOutput(language) {
         path.basename(file).includes(language)
     );
     console.log(mpegFiles);
-    const mpegFilePaths = mpegFiles.map((file) => path.join(outputFolder, file));
+    const mpegFilePaths = mpegFiles.map((file) => path.join(inputFolder, file));
     audioFiles = mpegFilePaths;
     console.log("Is Short: " + isShort);
 

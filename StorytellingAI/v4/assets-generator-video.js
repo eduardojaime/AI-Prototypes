@@ -20,14 +20,13 @@ async function getDuration(filePath) {
 async function processFiles(
   audioFiles,
   imageFiles,
-  outputFolder,
+  inputFolder,
   finalOutput,
   finalOutputWithBgSound,
   isShort
 ) {
-  let backgroundSound = path.join(__dirname, "output/background.mp3");
+  let backgroundSound = path.join(__dirname, "input/background.mp3");
   console.log("Starting Processing");
-  console.log(outputFolder);
   if (audioFiles.length !== imageFiles.length) {
     console.error("The number of audio files and image files should be equal");
     return;
@@ -42,7 +41,7 @@ async function processFiles(
     console.log("Processing " + audioPath);
     const imagePath = path.join(__dirname, imageFiles[i]);
     console.log("Processing " + imagePath);
-    const outputPath = path.join(outputFolder, `output_${i + 1}.mp4`);
+    const outputPath = path.join(inputFolder, `output_${i + 1}.mp4`);
 
     try {
       await mergeAudioAndImages(

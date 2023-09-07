@@ -33,7 +33,7 @@ async function GenerateAudio(audioPrompt, idx, language, isMale) {
     // Send the API request using Axios and wait for the response.
     const audioResp = await axios.request(options);
     fs.writeFileSync(
-      `output/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`,
+      `input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`,
       audioResp.data
     );
     console.log("Audio Asset Generated");

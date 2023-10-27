@@ -4,7 +4,7 @@
 
 Projects:
 
-- audio-extractor: Small Node.js tool to extract audio from video files. These audio files are then used to train custom voices.
+- AudioExtractor: Small Node.js tool to extract audio from video files. These audio files are then used to train custom voices.
 - CognitiveSearch: POC Node.js app that consumes Azure Cognitive Search Service.
 - EduarBot: This is an OpenAI Chat service built in C# and MinimalAPIs.
 - RefArch: This folder contains reference architecture diagrams for applications build utilizing AI services.

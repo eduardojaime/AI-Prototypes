@@ -3,6 +3,7 @@ channel
 *.png
 *.mpeg
 *.csv
+*.mdtext
 *.txt
 *.mp4
 *.mp3

@@ -11,8 +11,8 @@ const path = require("path");
 const assetsFolder = "./input/assets";
 const longAssetsFolder = "./input/longassets";
 const shortAssetsFolder = "./input/shortassets";
-const outputFolder = "./output" // path.join(__dirname, "output");
-const inputFolder = "./input" // path.join(__dirname, "output");
+const outputFolder = "./output"; // path.join(__dirname, "output");
+const inputFolder = "./input";
 const outputTimeStamp = Math.floor(Date.now() / 1000);
 let finalOutput = "";
 let finalOutputWithBgSound = "";
@@ -44,11 +44,11 @@ async function Main() {
   isShort =
     (await GetAnswer("Is this a YouTube Short?")) === "Y"
       ? (console.log("Short Format Selected (Vertical Video)"),
-        outputFileNamePrefix = "SHORT",
+        outputFileNamePrefix = "SHORTS-HORROR",
         await RestoreFiles(shortAssetsFolder, inputFolder),
         true)
       : (console.log("Long Format Selected (Horizontal Video)"),
-        outputFileNamePrefix = "VIDEO",
+        outputFileNamePrefix = "VIDEO-HORROR",
         await RestoreFiles(longAssetsFolder, inputFolder),
         false);
 

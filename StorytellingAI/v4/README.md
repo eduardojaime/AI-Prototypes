@@ -2,6 +2,6 @@
 
 Objectives:
 
-- [ ] Multi-language Support
-- [ ] Single run generation of two videos
+- [x] Multi-language Support
+- [x] Single run generation of two videos
 - [ ] Publish as a service

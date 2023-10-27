@@ -5,7 +5,7 @@ const axios = require("axios");
 const fs = require("fs");
 
 exports.ReadScriptFile = async function() {
-  let outputFilename = "input/response-multi.csv";
+  let outputFilename = "input/response-multi.mdtext";
   return fs.readFileSync(outputFilename, "utf-8");
 }
 // DEPRECATED > Script Generation happens in UI
@@ -14,7 +14,7 @@ exports.GenerateScript = async function (generateScript, language) {
   // Query OpenAI text generation > get img prompt and script
   let script ="";
   // Languages supported so far: EN, ES
-  let outputFilename = "input/response-multi.csv";
+  let outputFilename = "input/response-multi.mdtext";
   // select language to generate
   if (generateScript) {    
     const OpenAIEndpoint = configs.OpenAI.Endpoint;

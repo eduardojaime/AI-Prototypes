@@ -21,8 +21,8 @@ const configs = {
     StylePreset: "cinematic",
     Sampler: "K_DPM_2_ANCESTRAL",
     AdditionalPrompt:
-      "((style of H.R. Giger, grotesque)),((2000s atmosphere, dark nocturnal atmosphere, horror movie)), ((latino actors)), (((((gloomy, dark mood, nightmarish))))), horror, dark deep black, scary, spooky, chiaroscuro, liminal space, (camera noise, grainy texture, textured, glitch effect),terrifying,sad,horrific,terrifying,",
-    Misc: " ",
+      "terrifying,horrific,terrifying,dark nocturnal atmosphere,liminal space,2000s atmosphere, ((horror movie)), (((((gloomy, dark))))), (camera noise, grainy texture, textured, glitch effect)",
+    Misc: "((style of H.R. Giger, grotesque)), NIGHTMARISH,",
     AdditionalPromptLegacy:
       "horror movie,scary,spooky,horrific,terrifying,dark nocturnal atmosphere",
     NegativePrompt:

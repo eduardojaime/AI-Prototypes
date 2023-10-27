@@ -6,37 +6,47 @@ const fs = require("fs");
 
 async function GenerateAudio(audioPrompt, idx, language, isMale) {
   try {
-    // https://api.elevenlabs.io/docs
-    // Query ElevenLabs API with script > get voice recordings
-    const ElevenLabsEndpoint = configs.ElevenLabs.Endpoint;
-    const ElevenLabsSecret = configs.ElevenLabs.Secret;
-    const VoiceId = (isMale) ? configs.ElevenLabs.MaleVoiceId : configs.ElevenLabs.FemaleVoiceId;
-    // new code
-    const options = {
-      method: "POST",
-      url: `${ElevenLabsEndpoint}/${VoiceId}`, // Includes VoiceId
-      headers: {
-        "xi-api-key": `${ElevenLabsSecret}`, // Set the API key in the headers.
-        accept: "audio/mpeg", // Set the expected response type to audio/mpeg.
-        "content-type": "application/json", // Set the content type to application/json.
-      },
-      data: {
-        text: audioPrompt, // Pass in the inputText as the text to be converted to speech.
-        model_id: configs.ElevenLabs.MultilingualModelId,
-        voice_settings: {
-          stability: configs.ElevenLabs.VoiceSettings.Stability,
-          similarity_boost: configs.ElevenLabs.VoiceSettings.Similarity,
+    if (fs.existsSync(`input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`)) {
+      console.log(
+        `File Exists: input/audio-${idx
+          .toString()
+          .padStart(2, 0)}-${language}.mp3`
+      );
+    } else {
+      // https://api.elevenlabs.io/docs
+      // Query ElevenLabs API with script > get voice recordings
+      const ElevenLabsEndpoint = configs.ElevenLabs.Endpoint;
+      const ElevenLabsSecret = configs.ElevenLabs.Secret;
+      const VoiceId = isMale
+        ? configs.ElevenLabs.MaleVoiceId
+        : configs.ElevenLabs.FemaleVoiceId;
+      // new code
+      const options = {
+        method: "POST",
+        url: `${ElevenLabsEndpoint}/${VoiceId}`, // Includes VoiceId
+        headers: {
+          "xi-api-key": `${ElevenLabsSecret}`, // Set the API key in the headers.
+          accept: "audio/mpeg", // Set the expected response type to audio/mpeg.
+          "content-type": "application/json", // Set the content type to application/json.
         },
-      },
-      responseType: "arraybuffer", // Set the responseType to arraybuffer to receive binary data as response.
-    };
-    // Send the API request using Axios and wait for the response.
-    const audioResp = await axios.request(options);
-    fs.writeFileSync(
-      `input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`,
-      audioResp.data
-    );
-    console.log("Audio Asset Generated");
+        data: {
+          text: audioPrompt, // Pass in the inputText as the text to be converted to speech.
+          model_id: configs.ElevenLabs.MultilingualModelId,
+          voice_settings: {
+            stability: configs.ElevenLabs.VoiceSettings.Stability,
+            similarity_boost: configs.ElevenLabs.VoiceSettings.Similarity,
+          },
+        },
+        responseType: "arraybuffer", // Set the responseType to arraybuffer to receive binary data as response.
+      };
+      // Send the API request using Axios and wait for the response.
+      const audioResp = await axios.request(options);
+      fs.writeFileSync(
+        `input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`,
+        audioResp.data
+      );
+      console.log("Audio Asset Generated");
+    }
   } catch (ex) {
     console.log("Error in Eleven Labs: " + ex.response.data);
   }

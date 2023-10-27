@@ -1,8 +1,8 @@
 # AI Prototypes
 
-# Repository for AI Prototyping. 
+This is a Repository for AI Prototyping. 
 
-Projects:
+Current Projects:
 
 - AudioExtractor: Small Node.js tool to extract audio from video files. These audio files are then used to train custom voices.
 - CognitiveSearch: POC Node.js app that consumes Azure Cognitive Search Service.

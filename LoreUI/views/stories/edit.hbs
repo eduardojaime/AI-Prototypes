@@ -1,0 +1,114 @@
+<h1>
+  Edit a Story
+</h1>
+<hr>
+<form method="POST">
+  <fieldset>
+    <label for="Title" class="col-2">
+      Title:
+    </label>
+    <input name="Title" id="Title" required value="{{data.Title}}" />
+  </fieldset>
+  <fieldset>
+    <label for="Notes" class="col-2">
+      Notes:
+    </label>
+    <textarea name="Notes" id="Notes" required>{{data.Notes}}</textarea>
+  </fieldset>
+  <fieldset>
+    <label for="Status" class="col-2">
+      Status:
+    </label>
+    <select name="Status" id="Status">
+      {{createOption 'TO DO' data.Status}}
+      {{createOption 'IN PROGRESS' data.Status}}
+      {{createOption 'DONE' data.Status}}
+      {{createOption 'PUBLISHED' data.Status}}
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="Channel" class="col-2">
+      Channel:
+    </label>
+    <select name="Channel" id="Channel">
+      {{createOption 'NO CHANNEL' data.Channel}}
+      {{#each channels}}
+        {{createOption this.Name ../data.Channel}}
+      {{/each}}
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="IsShort" class="col-2">
+      IsShort:
+    </label>
+    <select name="IsShort" id="IsShort">
+      {{createOption 'false' data.IsShort }}
+      {{createOption 'true' data.IsShort }}
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="IsFemale" class="col-2">
+      IsFemale: 
+    </label>
+    <select name="IsFemale" id="IsFemale">
+      {{createOption 'false' data.IsFemale }}
+      {{createOption 'true' data.IsFemale }}
+    </select>
+  </fieldset>
+  <br>
+  <h3>Multi Language Script Table</h3>
+  <hr>
+  <fieldset>
+    <label for="ScriptTableMultiLang" class="col-2">
+      Table:
+    </label>
+    <textarea name="ScriptTableMultiLang" id="ScriptTableMultiLang" class="script">{{data.ScriptTable}}</textarea>
+  </fieldset>
+  <br>
+  <button class="btn btn-primary" name="action" value="generateTable">
+    Generate Metadata</button>
+  <br>
+  <h3>English</h3>
+  <hr>
+  <fieldset>
+    <label for="ScriptMetadataTitleEN" class="col-2">
+      Title EN:
+    </label>
+    <input name="ScriptMetadataTitleEN" id="ScriptMetadataTitleEN" value="{{data.MetadataEN.Title}}"/>
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataDescriptionEN" class="col-2">
+      Description EN:
+    </label>
+    <textarea name="ScriptMetadataDescriptionEN" id="ScriptMetadataDescriptionEN" class="description">{{data.MetadataEN.Description}}</textarea>
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataTagsEN" class="col-2">
+      Tags EN:
+    </label>
+    <textarea name="ScriptMetadataTagsEN" id="ScriptMetadataTagsEN">{{data.MetadataEN.Tags}}</textarea>
+  </fieldset>
+  <br>
+  <h3>Spanish</h3>
+  <hr>
+  <fieldset>
+    <label for="ScriptMetadataTitleES" class="col-2">
+      Title ES:
+    </label>
+    <input name="ScriptMetadataTitleES" id="ScriptMetadataTitleES" value="{{data.MetadataES.Title}}"/>
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataDescriptionES" class="col-2">
+      Description ES:
+    </label>
+    <textarea name="ScriptMetadataDescriptionES" id="ScriptMetadataDescriptionES" class="description">{{data.MetadataES.Description}}</textarea>
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataTagsES" class="col-2">
+      Tags ES:
+    </label>
+    <textarea name="ScriptMetadataTagsES" id="ScriptMetadataTagsES">{{data.MetadataES.Tags}}</textarea>
+  </fieldset>
+  <hr>
+  <button class="btn btn-primary" name="action" value="save">Save</button>
+</form>

@@ -1,0 +1,83 @@
+<h1>
+  Edit an Aesthetic
+</h1>
+<hr>
+<form method="POST">
+  <fieldset>
+    <label for="Name" class="col-2">
+      Name:
+    </label>
+    <input name="Name" id="Name" required value="{{data.Name}}"/>
+  </fieldset>
+  <fieldset>
+    <label for="AdditionalPrompt" class="col-2">
+      AdditionalPrompt:
+    </label>
+    <textarea name="AdditionalPrompt" id="AdditionalPrompt">{{data.AdditionalPrompt}}</textarea>
+  </fieldset>
+  <fieldset>
+    <label for="NegativePrompt" class="col-2">
+      NegativePrompt:
+    </label>
+    <textarea name="NegativePrompt" id="NegativePrompt">{{data.NegativePrompt}}</textarea>
+  </fieldset>
+  <fieldset>
+    <label for="StylePreset" class="col-2">
+      StylePreset:
+    </label>
+    <select name="StylePreset" id="StylePreset">
+      {{createOption '3d-model' data.StylePreset}}
+      {{createOption 'analog-film' data.StylePreset}}
+      {{createOption 'anime' data.StylePreset}}
+      {{createOption 'cinematic' data.StylePreset}}
+      {{createOption 'comic-book' data.StylePreset}}
+      {{createOption 'digital-art' data.StylePreset}}
+      {{createOption 'enhance' data.StylePreset}}
+      {{createOption 'fantasy-art' data.StylePreset}}
+      {{createOption 'isometric' data.StylePreset}}
+      {{createOption 'line-art' data.StylePreset}}
+      {{createOption 'low-poly' data.StylePreset}}
+      {{createOption 'modeling-compound' data.StylePreset}}
+      {{createOption 'neon-punk' data.StylePreset}}
+      {{createOption 'origami' data.StylePreset}}
+      {{createOption 'photographic' data.StylePreset}}
+      {{createOption 'pixel-art' data.StylePreset}}
+      {{createOption 'tile-texture' data.StylePreset}}                      
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="Sampler" class="col-2">
+      Sampler: 
+    </label>
+    <select name="Sampler" id="Sampler">
+      {{createOption 'DDIM' data.Sampler}}
+      {{createOption 'DDPM' data.Sampler}}
+      {{createOption 'K_DPMPP_2M' data.Sampler}}
+      {{createOption 'K_DPMPP_2S_ANCESTRAL' data.Sampler}}
+      {{createOption 'K_DPM_2' data.Sampler}}
+      {{createOption 'K_DPM_2_ANCESTRAL' data.Sampler}}
+      {{createOption 'K_EULER' data.Sampler}}
+      {{createOption 'K_EULER_ANCESTRAL' data.Sampler}}
+      {{createOption 'K_HEUN' data.Sampler}}
+      {{createOption 'K_LMS' data.Sampler}}              
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="ClipGuidancePreset" class="col-2">
+      ClipGuidancePreset:
+    </label>
+    <select name="ClipGuidancePreset" id="ClipGuidancePreset">
+      {{createOption 'NONE' data.ClipGuidancePreset}}
+      {{createOption 'FAST_BLUE' data.ClipGuidancePreset}}
+      {{createOption 'FAST_GREEN' data.ClipGuidancePreset}}
+      {{createOption 'SIMPLE' data.ClipGuidancePreset}}
+      {{createOption 'SLOW' data.ClipGuidancePreset}}
+      {{createOption 'SLOWER' data.ClipGuidancePreset}}
+      {{createOption 'SLOWEST' data.ClipGuidancePreset}}
+    </select>
+  </fieldset>
+  <hr>
+  <button class="btn btn-primary">
+    Save
+  </button>
+</form>

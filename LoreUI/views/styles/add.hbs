@@ -1,0 +1,83 @@
+<h1>
+  Create a New Style
+</h1>
+<hr>
+<form method="POST">
+  <fieldset>
+    <label for="Name" class="col-2">
+      Name:
+    </label>
+    <input name="Name" id="Name" required />
+  </fieldset>
+  <fieldset>
+    <label for="AdditionalPrompt" class="col-2">
+      AdditionalPrompt:
+    </label>
+    <textarea name="AdditionalPrompt" id="AdditionalPrompt"></textarea>
+  </fieldset>
+  <fieldset>
+    <label for="NegativePrompt" class="col-2">
+      NegativePrompt:
+    </label>
+    <textarea name="NegativePrompt" id="NegativePrompt"></textarea>
+  </fieldset>
+  <fieldset>
+    <label for="StylePreset" class="col-2">
+      StylePreset:
+    </label>
+    <select name="StylePreset" id="StylePreset">
+      <option>3d-model</option>
+      <option>analog-film</option>
+      <option>anime</option>
+      <option>cinematic</option>
+      <option>comic-book</option>
+      <option>digital-art</option>
+      <option>enhance</option>
+      <option>fantasy-art</option>
+      <option>isometric</option>
+      <option>line-art</option>
+      <option>low-poly</option>
+      <option>modeling-compound</option>
+      <option>neon-punk</option>
+      <option>origami</option>
+      <option>photographic</option>
+      <option>pixel-art</option>
+      <option>tile-texture</option>                      
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="Sampler" class="col-2">
+      Sampler: 
+    </label>
+    <select name="Sampler" id="Sampler">
+      <option>DDIM</option>
+      <option>DDPM</option>
+      <option>K_DPMPP_2M</option>
+      <option>K_DPMPP_2S_ANCESTRAL</option>
+      <option>K_DPM_2</option>
+      <option>K_DPM_2_ANCESTRAL</option>
+      <option>K_EULER</option>
+      <option>K_EULER_ANCESTRAL</option>
+      <option>K_HEUN</option>
+      <option>K_LMS</option>              
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="ClipGuidancePreset" class="col-2">
+      ClipGuidancePreset:
+    </label>
+    <select name="ClipGuidancePreset" id="ClipGuidancePreset">
+      <option>NONE</option>
+      <option>FAST_BLUE</option>
+      <option>FAST_GREEN</option>
+      <option>SIMPLE</option>
+      <option>SLOW</option>
+      <option>SLOWER</option>
+      <option>SLOWEST</option>
+    </select>
+  </fieldset>
+  <hr>
+  <button class="btn btn-primary">
+    Save
+  </button>
+</form>

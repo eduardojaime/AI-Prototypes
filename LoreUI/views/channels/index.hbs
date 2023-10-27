@@ -1,0 +1,28 @@
+<h1>{{title}}</h1>
+
+<a href="/channels/add" class="btn btn-info">Add a New Channel</a>
+
+{{! To Show data }}
+<table class="table table-striped table-hover">
+  <thead>
+    <th>Name</th>
+    <th>Url</th>
+    <th></th>
+  </thead>
+  <tbody>
+    {{#each dataset}}
+      <tr>
+        <td>{{this.Name}}</td>
+        <td>{{this.Url}}</td>
+        <td>
+          <a href="/channels/edit/{{this._id}}" class="btn btn-info">Edit</a>
+          <a
+            href="/channels/delete/{{this._id}}"
+            onclick="return confirmDeletion()"
+            class="btn btn-danger"
+          >Delete</a>
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

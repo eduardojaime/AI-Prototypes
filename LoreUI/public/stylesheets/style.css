@@ -1,0 +1,35 @@
+body {
+  /* padding: 50px; */
+  font: 14px "Verdana", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+/* Custom CSS */
+input {
+  width: 75%;
+}
+textarea {
+  width: 75%;
+  height: 100px;
+}
+textarea.script {
+  width: 75%;
+  height: 800px;
+}
+
+textarea.description {
+  width: 75%;
+  height: 200px;
+}
+
+fieldset {
+  margin-bottom: 5px !important;
+}
+
+fieldset > label {
+  float: left;
+  width: 200px;
+}

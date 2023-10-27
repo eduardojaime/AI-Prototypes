@@ -1,0 +1,31 @@
+<h1>{{title}}</h1>
+
+<a href="/styles/add" class="btn btn-info">Add a New Style</a>
+
+{{! To Show data }}
+<table class="table table-striped table-hover">
+  <thead>
+    <th>Name</th>
+    <th>AdditionalPrompt</th>
+    <th>NegativePrompt</th>
+    <th>StylePreset</th>
+    <th>Sampler</th>
+    <th>ClipGuidancePreset</th>
+  </thead>
+  <tbody>
+    {{#each dataset}}
+      <tr>
+        <td>{{this.Name}}</td>
+        <td>{{this.AdditionalPrompt}}</td>
+        <td>{{this.NegativePrompt}}</td>
+        <td>{{this.StylePreset}}</td>
+        <td>{{this.Sampler}}</td>
+        <td>{{this.ClipGuidancePreset}}</td>
+        <td>
+          <a href="/styles/edit/{{this._id}}" class="btn btn-info">Edit</a>
+          <a href="/styles/delete/{{this._id}}" onclick="return confirmDeletion()" class="btn btn-danger">Delete</a>
+          </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

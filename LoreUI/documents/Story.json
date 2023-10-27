@@ -1,0 +1,46 @@
+[
+  {
+    "Title": "Story Test",
+    "IsShort": false,
+    "IsFemale": false,
+    "Status": "TODO",
+    "Aesthetics": {
+      "AdditionalPrompt": "dark, eerie",
+      "NegativePrompt": "nsfw",
+      "StylePreset": "cinematic",
+      "Sampler": "K_DPM_2_ANCESTRAL"
+    },
+    "Scripts": [
+        {
+            "Language": "ES",
+            "Table": "<TABLE HERE>",
+            "Metadata": {
+              "Title": "Una Historia",
+              "Description": "TEST TEST",
+              "Tags": "#tags"
+            }
+        }
+    ],
+    "Languages": [
+        {
+          "Code": "ES",
+          "Metadata": {
+            "Title": "Una Historia",
+            "Description": "TEST TEST",
+            "Tags": "#tags"
+          },
+          "StoryPrompts": ["1", "2", "3"]
+        },
+        {
+          "Code": "EN",
+          "Metadata": {
+            "Title": "A Story",
+            "Description": "TEST TEST",
+            "Tags": "#tags"
+          },
+          "StoryPrompts": ["1", "2", "3"]
+        }
+    ],
+    "ImagePrompts": ["1", "2", "3"]
+  }
+]

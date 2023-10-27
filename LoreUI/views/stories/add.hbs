@@ -1,0 +1,112 @@
+<h1>
+  Create a Story
+</h1>
+<hr />
+<form method="POST">
+  <fieldset>
+    <label for="Title" class="col-2">
+      Title:
+    </label>
+    <input name="Title" id="Title" required />
+  </fieldset>
+  <fieldset>
+    <label for="Notes" class="col-2">
+      Notes:
+    </label>
+    <textarea name="Notes" id="Notes" required></textarea>
+  </fieldset>
+  <fieldset>
+    <label for="Channel" class="col-2">
+      Channel:
+    </label>
+    <select name="Channel" id="Channel">
+      <option>NO CHANNEL</option>
+      {{#each channels}}
+        <option>{{this.Name}}</option>
+      {{/each}}
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="IsShort" class="col-2">
+      IsShort:
+    </label>
+    <select name="IsShort" id="IsShort">
+      <option>false</option>
+      <option>true</option>
+    </select>
+  </fieldset>
+  <fieldset>
+    <label for="IsFemale" class="col-2">
+      IsFemale:
+    </label>
+    <select name="IsFemale" id="IsFemale">
+      <option>false</option>
+      <option>true</option>
+    </select>
+  </fieldset>
+  {{!-- <br />
+  <h3>Multi Language Script Table</h3>
+  <hr />
+  <fieldset>
+    <label for="ScriptTableMultiLang" class="col-2">
+      Table:
+    </label>
+    <textarea
+      name="ScriptTableMultiLang"
+      id="ScriptTableMultiLang"
+      class="script"
+    ></textarea>
+  </fieldset>
+  <br />
+  <h3>English</h3>
+  <hr />
+  <fieldset>
+    <label for="ScriptMetadataTitleEN" class="col-2">
+      Title EN:
+    </label>
+    <input name="ScriptMetadataTitleEN" id="ScriptMetadataTitleEN" />
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataDescriptionEN" class="col-2">
+      Description EN:
+    </label>
+    <textarea
+      name="ScriptMetadataDescriptionEN"
+      id="ScriptMetadataDescriptionEN"
+      class="description"
+    ></textarea>
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataTagsEN" class="col-2">
+      Tags EN:
+    </label>
+    <textarea name="ScriptMetadataTagsEN" id="ScriptMetadataTagsEN"></textarea>
+  </fieldset>
+  <br />
+  <h3>Spanish</h3>
+  <hr />
+  <fieldset>
+    <label for="ScriptMetadataTitleES" class="col-2">
+      Title ES:
+    </label>
+    <input name="ScriptMetadataTitleES" id="ScriptMetadataTitleES" />
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataDescriptionES" class="col-2">
+      Description ES:
+    </label>
+    <textarea
+      name="ScriptMetadataDescriptionES"
+      id="ScriptMetadataDescriptionES"
+      class="description"
+    ></textarea>
+  </fieldset>
+  <fieldset>
+    <label for="ScriptMetadataTagsES" class="col-2">
+      Tags ES:
+    </label>
+    <textarea name="ScriptMetadataTagsES" id="ScriptMetadataTagsES"></textarea>
+  </fieldset> --}}
+  <hr />
+  <button class="btn btn-primary" name="action" value="save">Save</button>
+</form>

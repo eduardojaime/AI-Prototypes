@@ -1,0 +1,27 @@
+<h1>{{title}}</h1>
+
+<a href="/themes/add" class="btn btn-info">Add a New Theme</a>
+
+{{! To Show data }}
+<table class="table table-striped table-hover">
+  <thead>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Tags</th>
+    <th>Keywords</th>
+  </thead>
+  <tbody>
+    {{#each dataset}}
+      <tr>
+        <td>{{this.Name}}</td>
+        <td>{{this.Description}}</td>
+        <td>{{this.Tags}}</td>
+        <td>{{this.Keywords}}</td>
+        <td>
+          <a href="/themes/edit/{{this._id}}" class="btn btn-info">Edit</a>
+          <a href="/themes/delete/{{this._id}}" onclick="return confirmDeletion()" class="btn btn-danger">Delete</a>
+          </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

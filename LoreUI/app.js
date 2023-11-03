@@ -10,6 +10,7 @@ const storiesRouter = require("./routes/stories");
 const aestheticsRouter = require("./routes/aesthetics");
 const stylesRouter = require("./routes/styles");
 const channelsRouter = require("./routes/channels");
+const themesRouter = require("./routes/themes");
 const authorizationMiddleware = require("./middlewares/authorization");
 const passport = require("passport");
 const session = require("express-session");
@@ -45,6 +46,7 @@ app.use("/stories", authorizationMiddleware, storiesRouter);
 app.use("/styles", authorizationMiddleware, stylesRouter);
 app.use("/aesthetics", authorizationMiddleware, aestheticsRouter);
 app.use("/channels", authorizationMiddleware, channelsRouter);
+app.use("/themes", authorizationMiddleware, themesRouter);
 
 mongoose
   .connect(configs.ConnectionStrings.MongoDB, {

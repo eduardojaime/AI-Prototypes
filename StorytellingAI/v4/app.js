@@ -7,13 +7,14 @@ const generate_video = require("./assets-generator-video");
 const prompt = require("prompt");
 const fs = require("fs");
 const path = require("path");
-// Global variables
+// Global Constants
 const assetsFolder = "./input/assets";
 const longAssetsFolder = "./input/longassets";
 const shortAssetsFolder = "./input/shortassets";
 const outputFolder = "./output"; // path.join(__dirname, "output");
 const inputFolder = "./input";
-const outputTimeStamp = Math.floor(Date.now() / 1000);
+// Global Variables
+let outputTimeStamp = Math.floor(Date.now() / 1000);
 let finalOutput = "";
 let finalOutputWithBgSound = "";
 let outputFileNamePrefix = "";
@@ -21,6 +22,16 @@ let audioFiles = [];
 let imageFiles = [];
 let isShort = false;
 let isMale = false;
+let language = "EN";
+let audioIdx = 0;
+// Enums
+const SettingsEnum = {
+  LangEN: "EN",
+  AudioIdxEN: "0",
+  LangES: "ES",
+  AudioIdxES: "1",
+  ShortIncrement: 3,
+};
 
 async function Setup() {
   fs.mkdirSync(outputFolder, { recursive: true });
@@ -32,10 +43,26 @@ async function Setup() {
 
 async function Main() {
   Setup();
-  
-  let language = "EN"; // default english
-  let audioIdx = 0; // EN
-  
+
+  console.log("Welcome to StorytellingAI's Video Generation Engine");
+  console.log("Select a Language: ");
+  let selectedLanguage = await GetAnswer(
+    "Enter 1 for English or 2 for Spanish"
+  );
+  switch (selectedLanguage) {
+    case "1":
+      language = SettingsEnum.LangEN;
+      audioIdx = SettingsEnum.AudioIdxEN;
+      break;
+    case "2":
+      language = SettingsEnum.LangES;
+      audioIdx = SettingsEnum.AudioIdxES;
+      break;
+    default:
+      console.log("No valid language selected. Stopping execution.");
+      return;
+  }
+
   isMale =
     (await GetAnswer("Is this a Female narration?")) === "Y"
       ? (console.log("Female Voice Selected"), false)
@@ -44,55 +71,46 @@ async function Main() {
   isShort =
     (await GetAnswer("Is this a YouTube Short?")) === "Y"
       ? (console.log("Short Format Selected (Vertical Video)"),
-        outputFileNamePrefix = "SHORTS-HORROR",
+        (outputFileNamePrefix = "SHORTS-HORROR"),
         await RestoreFiles(shortAssetsFolder, inputFolder),
         true)
       : (console.log("Long Format Selected (Horizontal Video)"),
-        outputFileNamePrefix = "VIDEO-HORROR",
+        (outputFileNamePrefix = "VIDEO-HORROR"),
         await RestoreFiles(longAssetsFolder, inputFolder),
         false);
 
   let script = await generate_script.ReadScriptFile(); // DEPRECATED >> generate_script(generateScript, language);
+  let scriptArr = script.split(/\r\n|\r|\n/);
 
-  let generateImagesAnswer = await GetAnswer(
-    "Do you want to generate image files?"
-  );
-  if (generateImagesAnswer == "Y") {
-    console.log("OK - Generating Image files");
-    await ProcessScript(script, false, true, "", -1, false);
+  if (isShort == true) {
+    let increment = SettingsEnum.ShortIncrement;
+    let startIdx = 2; // skip table headers and ---
+    for (let i = startIdx; i <= scriptArr.length; i += increment) {
+      // take three
+      let sliceArr = scriptArr.slice(i, i + increment);
+      console.log(`arrLength: ${scriptArr.length} i: ${i} sliceArr ${sliceArr}`);
+      // process
+      console.log(`Generating Image and Audio Files ${language}`);
+      await ProcessScript(sliceArr, false, false, language, audioIdx, isMale);
+      // generate
+      console.log(`Generating Video Output ${language}`);
+      audioFiles = [];
+      imageFiles = [];
+      await GenerateVideoOutput(language);
+      // cleanup
+      await CleanUp();
+      await RestoreFiles(shortAssetsFolder, inputFolder);
+    }
   } else {
-    console.log("Skipping image assets generation, utilizing existing assets.");
-  }
+    console.log("Generating Image Files");
+    await ProcessScript(scriptArr, false, true, "", -1, false);
 
-  let generateAudioAnswerEN = await GetAnswer(
-    "Do you want to generate audio files? (EN)"
-  );
-  if (generateAudioAnswerEN == "Y") {
-    console.log("OK - Generating Audio files (EN)");
-    language = "EN";
-    audioIdx = 0;
-    await ProcessScript(script, true, false, language, audioIdx, isMale);
-  } else {
-    console.log(
-      "Skipping audio asset generation (EN), utilizing existing assets."
-    );
+    console.log(`Generating Audio Files ${language}`);
+    await ProcessScript(scriptArr, true, false, language, audioIdx, isMale);
+
+    console.log(`Generating Video Output ${language}`);
+    await GenerateVideoOutput(language);
   }
-  
-  let generateAudioAnswerES = await GetAnswer(
-    "Do you want to generate audio files? (ES)"
-  );
-  if (generateAudioAnswerES == "Y") {
-    console.log("OK - Generating Audio files (ES)");
-    language = "ES";
-    audioIdx = 1;
-    await ProcessScript(script, true, false, language, audioIdx, isMale);
-  } else {
-    console.log(
-      "Skipping audio asset generation (ES), utilizing existing assets."
-    );
-  }
-  await GenerateVideoOutput("EN");
-  await GenerateVideoOutput("ES");
   await CleanUp();
 }
 
@@ -103,16 +121,15 @@ async function GetAnswer(question) {
 }
 
 async function ProcessScript(
-  script,
+  scriptArr,
   skipImg,
   skipAudio,
   language,
   audioIdx,
   isMale
 ) {
-  let arr = script.split(/\r\n|\r|\n/);
   let idx = 1;
-  for (const val of arr) {
+  for (const val of scriptArr) {
     if (val.includes("---") || val.includes("IMAGE-PROMPT-PARAGRAPH")) {
       // console.log("skipping");
     } else {
@@ -136,6 +153,7 @@ async function ProcessScript(
 }
 
 async function GenerateVideoOutput(language) {
+  if (isShort) outputTimeStamp = Math.floor(Date.now() / 1000); // update
   finalOutput = path.join(
     outputFolder,
     `${outputFileNamePrefix}_${outputTimeStamp}_${language}.mp4`
@@ -145,48 +163,41 @@ async function GenerateVideoOutput(language) {
     `${outputFileNamePrefix}_${outputTimeStamp}_BG_${language}.mp4`
   );
 
-  let generateVideoAnswer = await GetAnswer(
-    `Do you want to generate video? (${language}) Press Y to confirm.`
+  console.log("Asset generation complete, generating Video now");
+  files = fs.readdirSync(inputFolder);
+
+  const pngFiles = files.filter(
+    (file) => path.extname(file).toLowerCase() === ".png"
   );
-  if (generateVideoAnswer == "Y") {
-    console.log("Asset generation complete, generating Video now");
-    files = fs.readdirSync(inputFolder);
+  const pngFilePaths = pngFiles.map((file) => path.join(inputFolder, file));
+  imageFiles = pngFilePaths;
 
-    const pngFiles = files.filter(
-      (file) => path.extname(file).toLowerCase() === ".png"
+  const mpegFiles = files.filter(
+    (file) =>
+      path.extname(file).toLowerCase() === ".mp3" &&
+      path.basename(file) !== "background.mp3" &&
+      path.basename(file).includes(language)
+  );
+  console.log(mpegFiles);
+  const mpegFilePaths = mpegFiles.map((file) => path.join(inputFolder, file));
+  audioFiles = mpegFilePaths;
+  console.log("Is Short: " + isShort);
+
+  if (imageFiles.length == audioFiles.length && imageFiles.length > 0) {
+    console.log("Images and Audio files match");
+    await generate_video(
+      audioFiles,
+      imageFiles,
+      outputFolder,
+      finalOutput,
+      finalOutputWithBgSound,
+      isShort
     );
-    const pngFilePaths = pngFiles.map((file) => path.join(inputFolder, file));
-    imageFiles = pngFilePaths;
-
-    const mpegFiles = files.filter(
-      (file) =>
-        path.extname(file).toLowerCase() === ".mp3" &&
-        path.basename(file) !== "background.mp3" &&
-        path.basename(file).includes(language)
-    );
-    console.log(mpegFiles);
-    const mpegFilePaths = mpegFiles.map((file) => path.join(inputFolder, file));
-    audioFiles = mpegFilePaths;
-    console.log("Is Short: " + isShort);
-
-    if (imageFiles.length == audioFiles.length && imageFiles.length > 0) {
-      console.log("Images and Audio files match");
-      await generate_video(
-        audioFiles,
-        imageFiles,
-        outputFolder,
-        finalOutput,
-        finalOutputWithBgSound,
-        isShort
-      );
-    } else {
-      console.log(
-        "Process will not start. Mismatch between image and audio files."
-      );
-    }
   } else {
-    console.log("Stopping Execution");
-    return;
+    console.log(
+      "Process will not start. Mismatch between image and audio files."
+    );
+    return; // allows for retry
   }
 }
 

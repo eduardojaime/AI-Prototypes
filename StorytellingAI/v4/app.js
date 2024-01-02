@@ -7,6 +7,7 @@ const generate_video = require("./assets-generator-video");
 const prompt = require("prompt");
 const fs = require("fs");
 const path = require("path");
+const configs = require("./configs");
 // Global Constants
 const assetsFolder = "./input/assets";
 const longAssetsFolder = "./input/longassets";
@@ -31,7 +32,7 @@ const SettingsEnum = {
   AudioIdxEN: "0",
   LangES: "ES",
   AudioIdxES: "1",
-  ShortIncrement: 3,
+  ShortIncrement: configs.Settings.ShortIncrement,
 };
 
 async function Setup() {
@@ -92,7 +93,10 @@ async function Main() {
   if (isShort == true) {
     let increment = SettingsEnum.ShortIncrement;
     let startIdx = 2; // skip table headers and ---
+    let isWait1 = await GetAnswer(`Starting short generation. Press any key to continue.`);
+
     for (let i = startIdx; i <= scriptArr.length; i += increment) {
+      let isWait = await GetAnswer(`Step: ${i} Increment: ${increment} Press any key to continue.`);
       // take three
       let sliceArr = scriptArr.slice(i, i + increment);
       // console.log(
@@ -101,7 +105,6 @@ async function Main() {
       // process
       console.log(`Generating Image and Audio Files ${language}`);
       await ProcessScript(sliceArr, false, false, language, audioIdx, isMale, isVideoClip);
-      let isWait = await GetAnswer("Wait some time? press something to continue");
 
       // generate
       console.log(`Generating Video Output ${language}`);

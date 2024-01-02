@@ -28,43 +28,35 @@ async function GenerateImage(imgPrompt, idx, isShort, isVideoClip) {
         selectedHeight = configs.StabilityAI.Height;
       }
 
-      // if (isVideoClip) {
-      //   // currently API only works with 1024x576 or 576x1024 combinations
-      //   if (isShort) {
-      //     selectedWidth = configs.StabilityAI.ShortVideoWidth;
-      //     selectedHeight = configs.StabilityAI.ShortVideoHeight;
-      //   } else {
-      //     selectedWidth = configs.StabilityAI.VideoWidth;
-      //     selectedHeight = configs.StabilityAI.VideoHeight;
-      //   }
-      // } else {
-      //   // legacy code
-      if (isShort) {
-        selectedWidth = configs.StabilityAI.ShortWidth;
-        selectedHeight = configs.StabilityAI.ShortHeight;
+      if (isVideoClip) {
+        // currently API only works with 1024x576 or 576x1024 combinations
+        if (isShort) {
+          selectedWidth = configs.StabilityAI.ShortVideoWidth;
+          selectedHeight = configs.StabilityAI.ShortVideoHeight;
+        } else {
+          selectedWidth = configs.StabilityAI.VideoWidth;
+          selectedHeight = configs.StabilityAI.VideoHeight;
+        }
       } else {
-        selectedWidth = configs.StabilityAI.Width;
-        selectedHeight = configs.StabilityAI.Height;
+        // legacy code
+        if (isShort) {
+          selectedWidth = configs.StabilityAI.ShortWidth;
+          selectedHeight = configs.StabilityAI.ShortHeight;
+        } else {
+          selectedWidth = configs.StabilityAI.Width;
+          selectedHeight = configs.StabilityAI.Height;
+        }
       }
-      // }
-      await GeneratePNG(imgPath, imgPrompt, selectedHeight, selectedWidth, isVideoClip);
+      await GeneratePNG(
+        imgPath,
+        imgPrompt,
+        selectedHeight,
+        selectedWidth,
+        isVideoClip
+      );
 
       if (isVideoClip) {
         await sleep(3000);
-        // resize to 1024x576 or 576x1024 combinations
-        // if (isShort) {
-        //   ResizePNG(
-        //     imgPath,
-        //     configs.StabilityAI.ShortVideoHeight,
-        //     configs.StabilityAI.ShortVideoWidth
-        //   );
-        // } else {
-        //   ResizePNG(
-        //     imgPath,
-        //     configs.StabilityAI.VideoHeight,
-        //     configs.StabilityAI.VideoWidth
-        //   );
-        // }
         await GenerateVideoClip(
           imgPath,
           videoPath,
@@ -80,13 +72,21 @@ async function GenerateImage(imgPrompt, idx, isShort, isVideoClip) {
   }
 }
 
-async function GeneratePNG(imgPath, imgPrompt, selectedHeight, selectedWidth, isVideoClip) {
+async function GeneratePNG(
+  imgPath,
+  imgPrompt,
+  selectedHeight,
+  selectedWidth,
+  isVideoClip
+) {
   // Query StableDiffusion API with img prompt > get images
   // https://stability.ai/
   // https://www.pixelconverter.com/aspect-ratio-to-pixels-converter/
   // Use XL if not video clip to generate better images
   // Legacy endpoint supports width x height combinations for ImageToVideo conversion
-  const StabilityAIEndpoint = isVideoClip ? configs.StabilityAI.EndpointLegacy: configs.StabilityAI.EndpointXL;
+  const StabilityAIEndpoint = isVideoClip
+    ? configs.StabilityAI.EndpointLegacy
+    : configs.StabilityAI.EndpointXL;
   const StabilityAISecret = configs.StabilityAI.Secret;
   const options = {
     method: "POST",
@@ -182,22 +182,6 @@ async function GenerateVideoClip(imgPath, videoPath) {
   let binaryData = Buffer.from(base64String, "base64");
   fs.writeFileSync(videoPath, binaryData);
   console.log("Video Asset Generated");
-}
-
-async function ResizePNG(imgPath, resizeHeight, resizeWidth) {
-  console.log("Resizing image: " + imgPath);
-
-  let tempFilePath = imgPath.replace("image-", "image-temp-");
-
-  fs.renameSync(imgPath, tempFilePath);
-
-  await sharp(tempFilePath).resize(resizeWidth, resizeHeight).toFile(imgPath);
-
-  fs.unlinkSync(tempFilePath);
-
-  console.log("Resizing Successful!");
-
-  await sleep(10000);
 }
 
 function sleep(ms) {

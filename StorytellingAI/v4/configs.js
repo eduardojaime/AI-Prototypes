@@ -5,7 +5,11 @@ require("dotenv").config();
 // SDXL v0.9 and v1.0 allowed dimensions: 1024x1024, 1152x896, 1216x832, 1344x768, 1536x640, 640x1536, 768x1344, 832x1216, 896x1152
 // Legacy 16:9 ratio > 1024x576
 // XL 16:90 ratio > 1344x768
+// StableVideo 1024x576 or 576x1024
 const configs = {
+  Settings: {
+    ShortIncrement: 4,
+  },
   OpenAI: {
     Endpoint: "https://api.openai.com/v1/chat/completions",
     Secret: process.env.OPENAI_SECRET,
@@ -13,8 +17,10 @@ const configs = {
     SystemPrompt: "chat/system.txt",
   },
   StabilityAI: {
-    EndpointImg2VideoGeneration: "https://api.stability.ai/v2alpha/generation/image-to-video",
-    EndpointImg2VideoResult: "https://api.stability.ai/v2alpha/generation/image-to-video/result",
+    EndpointImg2VideoGeneration:
+      "https://api.stability.ai/v2alpha/generation/image-to-video",
+    EndpointImg2VideoResult:
+      "https://api.stability.ai/v2alpha/generation/image-to-video/result",
     EndpointXL:
       "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
     EndpointLegacy:
@@ -31,10 +37,10 @@ const configs = {
       "(close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw",
     NegativePromptLegacy:
       "disfigured, bad art, deformed, poorly drawn, extra limbs, blurry, bad anatomy, disfigured, poorly drawn face, poorly drawn hands, missing limbs, floating limbs, disjointed limbs, deformed hands, blurred, out of focus, long neck, long body, distorted, bad hands, error, extra digit, fewer digits, Lots of hands, extra limbs, extra fingers, conjoined fingers, deformed fingers, imperfect eyes, skewed eyes, unnatural face, unbalanced body, unnatural body, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, missing fingers, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw",
-    Width: 1024, //1344, // 1024,
-    Height: 576, // 768, // 576,
-    ShortWidth: 576,//768,
-    ShortHeight: 1024, //1344,
+    Width: 1344, // 1024,
+    Height: 768, // 576,
+    ShortWidth: 768,
+    ShortHeight: 1344,
     VideoWidth: 1024, // only 1024x576 or 576x1024
     VideoHeight: 576,
     ShortVideoWidth: 576,

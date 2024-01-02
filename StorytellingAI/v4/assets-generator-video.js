@@ -122,7 +122,6 @@ async function mergeAudioAndImages(
   });
 }
 
-// NEW MUST BE ADDED TO PROCESSFILES
 async function mergeVideoAndAudio(
   audioPath,
   videoPath,

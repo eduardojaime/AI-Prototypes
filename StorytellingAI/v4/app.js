@@ -62,8 +62,10 @@ async function Main() {
       audioIdx = SettingsEnum.AudioIdxES;
       break;
     default:
-      console.log("No valid language selected. Stopping execution.");
-      return;
+      console.log("None selected, setting default as spanish (ES).");
+      language = SettingsEnum.LangES;
+      audioIdx = SettingsEnum.AudioIdxES;
+      break;
   }
 
   isMale =
@@ -83,9 +85,9 @@ async function Main() {
         false);
 
   isVideoClip =
-    (await GetAnswer("Do you want to use Stable Video?")) === "Y"
-      ? true
-      : false;
+    (await GetAnswer("Do you want to generate a still image video? (No StableVideoDiffusion)")) === "Y"
+      ? false
+      : true;
 
   let script = await generate_script.ReadScriptFile(); // DEPRECATED >> generate_script(generateScript, language);
   let scriptArr = script.split(/\r\n|\r|\n/);
@@ -95,8 +97,8 @@ async function Main() {
     let startIdx = 2; // skip table headers and ---
     let isWait1 = await GetAnswer(`Starting short generation. Press any key to continue.`);
 
-    for (let i = startIdx; i <= scriptArr.length; i += increment) {
-      let isWait = await GetAnswer(`Step: ${i} Increment: ${increment} Press any key to continue.`);
+    for (let i = startIdx; i < scriptArr.length; i += increment) {
+      let isWait = await GetAnswer(`Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`);
       // take three
       let sliceArr = scriptArr.slice(i, i + increment);
       // console.log(

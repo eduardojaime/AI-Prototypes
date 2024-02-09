@@ -134,7 +134,7 @@ async function mergeVideoAndAudio(
 
   let duration = await getDuration(audioPath);
   let slowMotionFilter = `setpts=2*PTS`;
-  const videoDuration = 2; // Duration of the video loop in seconds
+  const videoDuration = 4; // 2; // Duration of the video loop in seconds
   const loops = Math.ceil(duration / videoDuration); // Calculate the number of loops required
 
   return new Promise((resolve, reject) => {
@@ -154,7 +154,7 @@ async function mergeVideoAndAudio(
       //.outputOptions("-pix_fmt yuv420p")
       .outputOptions(["-bufsize 1000k", "-b:a 192k", "-ar 44100", "-pix_fmt yuv420p", "-shortest", "-r 30"]) // "-af apad=pad_len=88200"]) // remove?
       //.outputOptions("-shortest") // Ensures that the output duration is the same as the shortest input stream
-      .videoFilters(slowMotionFilter, selectedScale)
+      .videoFilters(selectedScale) // , slowMotionFilter) // removed to test now videos are 4 seconds
       .save(outputPath)
       .on("end", () => {
         console.log("Merging completed: " + outputPath);

@@ -19,7 +19,7 @@ async function Test() {
     const url = "https://api.stability.ai/v2alpha/generation/image-to-video";
     const resultUrl =
       "https://api.stability.ai/v2alpha/generation/image-to-video/result/";
-    let sourceImg = "./input/test01.png";
+    let sourceImg = "./input/TEST/image-99.png";
 
     if (fs.existsSync(sourceImg)) console.log("File Exists!");
     const filePath = path.resolve(__dirname, sourceImg);
@@ -71,7 +71,7 @@ async function Test() {
     // console.log(vidResp.data);
     base64String = vidResp.data.video;
     let binaryData = Buffer.from(base64String, "base64");
-    fs.writeFileSync(`input/test01.mp4`, binaryData);
+    fs.writeFileSync(`input/TEST/VIDEOTEST99.mp4`, binaryData);
     console.log("Video Asset Generated");
   } catch (ex) {
     console.log(ex.response.data.errors);

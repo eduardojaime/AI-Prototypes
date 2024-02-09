@@ -143,7 +143,7 @@ async function GenerateVideoClip(imgPath, videoPath) {
   // form.append("image", imgPath); // another option
   form.append("seed", "0");
   form.append("cfg_scale", "2.5");
-  form.append("motion_bucket_id", "40");
+  form.append("motion_bucket_id", "100"); // default is 40
   const formHeaders = form.getHeaders();
   formHeaders.Authorization = `${StabilityAISecret}`;
 

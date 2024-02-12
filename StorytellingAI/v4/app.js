@@ -26,6 +26,7 @@ let isMale = false;
 let isVideoClip = false;
 let language = "EN";
 let audioIdx = 0;
+let inputScriptPath = "input/response-multi.mdtext";
 // Enums
 const SettingsEnum = {
   LangEN: "EN",
@@ -89,21 +90,23 @@ async function Main() {
       ? false
       : true;
 
-  let script = await generate_script.ReadScriptFile(); // DEPRECATED >> generate_script(generateScript, language);
+  let script = await generate_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
   let scriptArr = script.split(/\r\n|\r|\n/);
 
   if (isShort == true) {
     let increment = SettingsEnum.ShortIncrement;
     let startIdx = 2; // skip table headers and ---
-    let isWait1 = await GetAnswer(`Starting short generation. Press any key to continue.`);
+    // let isWait1 = await GetAnswer(`Starting short generation. Press any key to continue.`);
 
     for (let i = startIdx; i < scriptArr.length; i += increment) {
-      let isWait = await GetAnswer(`Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`);
+      console.log(`Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`);
       // take three
       let sliceArr = scriptArr.slice(i, i + increment);
-      // console.log(
-      //   `arrLength: ${scriptArr.length} i: ${i} sliceArr ${sliceArr}`
-      // );
+      // e.g. 2 + 4 = 6, position 6 is the second short in the 0-based index array
+      if (i >= (startIdx + increment)) {
+        fs.appendFileSync(inputScriptPath, sliceArr.join("\n"));
+      }
+
       // process
       console.log(`Generating Image and Audio Files ${language}`);
       await ProcessScript(sliceArr, false, false, language, audioIdx, isMale, isVideoClip);

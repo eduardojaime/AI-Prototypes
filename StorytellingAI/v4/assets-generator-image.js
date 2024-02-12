@@ -125,6 +125,21 @@ async function GeneratePNG(
   let imgResp = await axios.request(options);
   base64String = imgResp.data.artifacts[0].base64;
   let binaryData = Buffer.from(base64String, "base64");
+  // TODO Use sharp to resize an img created with SD XL
+  // const desiredWidth = 100; // New desired width from configs
+  // const desiredHeight = 100; // New desired height from configs
+
+  // sharp(binaryData)
+  //   .resize(desiredWidth, desiredHeight)
+  //   .toBuffer()
+  //   .then((resizedImageBuffer) => {
+  //     fs.writeFileSync(imgPath, resizedImageBuffer);
+  //     console.log("Img Asset Generated and Resized");
+  //   })
+  //   .catch((error) => {
+  //     console.error("Error resizing the image:", error);
+  //   });
+    
   fs.writeFileSync(imgPath, binaryData);
   console.log("Img Asset Generated");
 }
@@ -143,7 +158,7 @@ async function GenerateVideoClip(imgPath, videoPath) {
   // form.append("image", imgPath); // another option
   form.append("seed", "0");
   form.append("cfg_scale", "2.5");
-  form.append("motion_bucket_id", "100"); // default is 40
+  form.append("motion_bucket_id", configs.StabilityAI.MotionBucketId); // default is 40 from example but 127 from documentation
   const formHeaders = form.getHeaders();
   formHeaders.Authorization = `${StabilityAISecret}`;
 
@@ -159,7 +174,7 @@ async function GenerateVideoClip(imgPath, videoPath) {
   let id = idResp.data.id;
   // console.log(id);
 
-  await sleep(60000);
+  await sleep(90000);
   // TODO improve with retry strategy and while loops
   // if video is not ready it'll return
   // {

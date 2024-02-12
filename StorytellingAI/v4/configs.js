@@ -29,8 +29,8 @@ const configs = {
     StylePreset: "cinematic",
     Sampler: "K_DPM_2_ANCESTRAL",
     AdditionalPrompt:
-      "((grotesque)), nightmarish, hellish landscape, terrifying,horrific,terrifying,dark nocturnal atmosphere,liminal space,2000s atmosphere, (((((gloomy, dark, black))))), (camera noise, grainy texture, textured, glitch effect), dark red, dark green",
-    Misc: "((style of H.R. Giger, grotesque)), NIGHTMARISH, ((horror movie))",
+      "((grotesque)), nightmarish, hellish landscape, terrifying,horrific,terrifying,dark nocturnal atmosphere,2000s atmosphere, (((((gloomy, dark, black))))), (camera noise, grainy texture, textured, glitch effect), dark red, dark green",
+    Misc: "((style of H.R. Giger, grotesque)), NIGHTMARISH, ((horror movie)),liminal space",
     AdditionalPromptLegacy:
       "horror movie,scary,spooky,horrific,terrifying,dark nocturnal atmosphere",
     NegativePrompt:
@@ -50,6 +50,7 @@ const configs = {
     Seed: 0,
     CFGScale: 7,
     ClipGuidancePreset: "SIMPLE",
+    MotionBucketId: 127 // default
   },
   ElevenLabs: {
     Endpoint: "https://api.elevenlabs.io/v1/text-to-speech",

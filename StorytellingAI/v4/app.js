@@ -14,6 +14,10 @@ const longAssetsFolder = "./input/longassets";
 const shortAssetsFolder = "./input/shortassets";
 const outputFolder = "./output"; // path.join(__dirname, "output");
 const inputFolder = "./input";
+const audioFileExtname = ".mp3";
+const imageFileExtName = ".png";
+const videoFileExtName = ".mp4";
+const backgroundAudioFileName = "background.mp3";
 // Global Variables
 let outputTimeStamp = Math.floor(Date.now() / 1000);
 let finalOutput = "";
@@ -86,7 +90,9 @@ async function Main() {
         false);
 
   isVideoClip =
-    (await GetAnswer("Do you want to generate a still image video? (No StableVideoDiffusion)")) === "Y"
+    (await GetAnswer(
+      "Do you want to generate a still image video? (No StableVideoDiffusion)"
+    )) === "Y"
       ? false
       : true;
 
@@ -99,17 +105,27 @@ async function Main() {
     // let isWait1 = await GetAnswer(`Starting short generation. Press any key to continue.`);
 
     for (let i = startIdx; i < scriptArr.length; i += increment) {
-      console.log(`Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`);
+      console.log(
+        `Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`
+      );
       // take three
       let sliceArr = scriptArr.slice(i, i + increment);
       // e.g. 2 + 4 = 6, position 6 is the second short in the 0-based index array
-      if (i >= (startIdx + increment)) {
+      if (i >= startIdx + increment) {
         fs.appendFileSync(inputScriptPath, sliceArr.join("\n"));
       }
 
       // process
       console.log(`Generating Image and Audio Files ${language}`);
-      await ProcessScript(sliceArr, false, false, language, audioIdx, isMale, isVideoClip);
+      await ProcessScript(
+        sliceArr,
+        false,
+        false,
+        language,
+        audioIdx,
+        isMale,
+        isVideoClip
+      );
 
       // generate
       console.log(`Generating Video Output ${language}`);
@@ -118,14 +134,22 @@ async function Main() {
       await GenerateVideoOutput(language, isVideoClip);
       // cleanup
       await CleanUp();
-      await RestoreFiles(shortAssetsFolder, inputFolder);      
+      await RestoreFiles(shortAssetsFolder, inputFolder);
     }
   } else {
     console.log("Generating Image Files");
     await ProcessScript(scriptArr, false, true, "", -1, false, isVideoClip);
 
     console.log(`Generating Audio Files ${language}`);
-    await ProcessScript(scriptArr, true, false, language, audioIdx, isMale, isVideoClip);
+    await ProcessScript(
+      scriptArr,
+      true,
+      false,
+      language,
+      audioIdx,
+      isMale,
+      isVideoClip
+    );
 
     console.log(`Generating Video Output ${language}`);
     await GenerateVideoOutput(language, isVideoClip);
@@ -188,7 +212,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
 
   // Frames
   const pngFiles = files.filter(
-    (file) => path.extname(file).toLowerCase() === ".png"
+    (file) => path.extname(file).toLowerCase() === imageFileExtName
   );
   const pngFilePaths = pngFiles.map((file) => path.join(inputFolder, file));
   frameFiles = pngFilePaths;
@@ -196,7 +220,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
   console.log("Is VideoClip: " + isVideoClip);
   if (isVideoClip) {
     const mp4Files = files.filter(
-      (file) => path.extname(file).toLowerCase() === ".mp4"
+      (file) => path.extname(file).toLowerCase() === videoFileExtName
     );
     console.log(mp4Files);
     const mp4FilePaths = mp4Files.map((file) => path.join(inputFolder, file));
@@ -206,8 +230,8 @@ async function GenerateVideoOutput(language, isVideoClip) {
   // Audio
   const mpegFiles = files.filter(
     (file) =>
-      path.extname(file).toLowerCase() === ".mp3" &&
-      path.basename(file) !== "background.mp3" &&
+      path.extname(file).toLowerCase() === audioFileExtname &&
+      path.basename(file) !== backgroundAudioFileName &&
       path.basename(file).includes(language)
   );
   console.log(mpegFiles);
@@ -273,4 +297,6 @@ async function RestoreFiles(assetsFolder, outputFolder) {
   console.log("Restored Initial Files");
 }
 
-Main();
+Main().catch((err) => {
+  console.error(err);
+});

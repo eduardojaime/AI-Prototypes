@@ -5,6 +5,8 @@ const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 const ffprobePath = require("@ffprobe-installer/ffprobe").path;
 const ffmpeg = require("fluent-ffmpeg");
 const musicMetadata = require("music-metadata");
+const frameRate = 24;
+const audioBitRate = "128k"; // "192k";
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
@@ -106,7 +108,7 @@ async function mergeAudioAndImages(
       .videoCodec("libx264")
       .outputOption("-tune stillimage")
       .audioCodec("aac")
-      .audioBitrate("192k")
+      .audioBitrate(audioBitRate)
       .outputOptions("-pix_fmt yuv420p")
       .outputOptions("-shortest")
       .videoFilters(selectedScale)
@@ -143,17 +145,17 @@ async function mergeVideoAndAudio(
       .inputOption(`-stream_loop ${loops - 1}`) // Use the calculated number of loops
       // .inputOption("-stream_loop -1") // Loop the video until it matches the audio duration
       .input(audioPath)
-      .videoCodec("libx264")
-      // .outputOptions("-preset faster")
-      .outputOption("-tune stillimage")
-      // .outputOptions("-bufsize 1000k")
-      .videoBitrate("1000k")
-      .audioCodec("aac")
-      // .outputOptions("-ar 44100") // Sets the audio sample rate to 44100 Hz
-      .audioBitrate("192k")
-      //.outputOptions("-pix_fmt yuv420p")
-      .outputOptions(["-bufsize 1000k", "-b:a 192k", "-ar 44100", "-pix_fmt yuv420p", "-shortest", "-r 30"]) // "-af apad=pad_len=88200"]) // remove?
-      //.outputOptions("-shortest") // Ensures that the output duration is the same as the shortest input stream
+      .outputOptions([
+        "-vcodec libx264",
+        "-b:v 1000k",
+        "-acodec aac",
+        `-b:a ${audioBitRate}`,
+        "-bufsize 1000k",
+        "-ar 44100",
+        "-pix_fmt yuv420p",
+        // "-shortest",
+        `-r ${frameRate}`
+      ])
       .videoFilters(selectedScale) // , slowMotionFilter) // removed to test now videos are 4 seconds
       .save(outputPath)
       .on("end", () => {
@@ -177,16 +179,18 @@ async function concatVideos(videoFiles, finalOutput, isVideoClip) {
       ffmpeg()
         .input(concatListPath)
         .inputOptions(["-f concat", "-safe 0"])
-        // Append 2 seconds of silence to the output audio stream
-        // .outputOptions(["-af apad=pad_len=88200"])
         .outputOptions([
-          "-c:v libx264",
-          "-c:a aac",
-          "-preset medium",
-          "-r 30",
-          "-b:a 192k",
+          "-vcodec libx264",
+          "-b:v 1000k",
+          "-acodec aac",
+          `-b:a ${audioBitRate}`,
+          "-bufsize 1000k",
           "-ar 44100",
+          "-pix_fmt yuv420p",
+          // "-shortest",
+          `-r ${frameRate}`
         ])
+        // .outputOptions(["-af apad=pad_len=88200"])
         .save(finalOutput)
         .on("end", () => {
           console.log("Concatenation completed: " + finalOutput);
@@ -238,8 +242,8 @@ async function addBackgroundEffect(
         "-c:v libx264",
         "-c:a aac",
         "-preset medium",
-        "-r 30",
-        "-b:a 192k",
+        `-r ${frameRate}`,
+        `-b:a ${audioBitRate}`,
         "-ar 44100",
       ])
       .complexFilter([

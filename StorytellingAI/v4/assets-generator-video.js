@@ -15,7 +15,7 @@ const horizontalScale = "scale=1920:1080";
 
 async function getDuration(filePath) {
   const metadata = await musicMetadata.parseFile(filePath);
-  console.log("Duration:", metadata.format.duration);
+  console.log(`Audio Duration: ${metadata.format.duration} seconds`);
   return metadata.format.duration;
 }
 
@@ -138,6 +138,8 @@ async function mergeVideoAndAudio(
   let slowMotionFilter = `setpts=2*PTS`;
   const videoDuration = 4; // 2; // Duration of the video loop in seconds
   const loops = Math.ceil(duration / videoDuration); // Calculate the number of loops required
+  console.log(`Video Duration: ${videoDuration} seconds`); 
+  console.log(`Loops: ${loops}`)
 
   return new Promise((resolve, reject) => {
     ffmpeg()
@@ -153,8 +155,8 @@ async function mergeVideoAndAudio(
         "-bufsize 1000k",
         "-ar 44100",
         "-pix_fmt yuv420p",
-        // "-shortest",
-        `-r ${frameRate}`
+        "-shortest",
+        `-r ${frameRate}`,
       ])
       .videoFilters(selectedScale) // , slowMotionFilter) // removed to test now videos are 4 seconds
       .save(outputPath)
@@ -187,8 +189,8 @@ async function concatVideos(videoFiles, finalOutput, isVideoClip) {
           "-bufsize 1000k",
           "-ar 44100",
           "-pix_fmt yuv420p",
-          // "-shortest",
-          `-r ${frameRate}`
+          "-shortest",
+          `-r ${frameRate}`,
         ])
         // .outputOptions(["-af apad=pad_len=88200"])
         .save(finalOutput)
@@ -235,16 +237,19 @@ async function addBackgroundEffect(
       // try re-encoding your video to use the H.264 video codec and AAC audio codec
       // if not already using them, as these are widely supported and recommended by YouTube
       // Adjust the encoding preset (e.g., fast, medium, slow)
-      // Set a constant frame rate of 30 fps
+      // Set a constant frame rate of 24, 25, or 30
       // Sets the audio bitrate. Adjust as needed.
       // Sets the audio sample rate to 44.1 kHz
       .outputOptions([
-        "-c:v libx264",
-        "-c:a aac",
-        "-preset medium",
-        `-r ${frameRate}`,
+        "-vcodec libx264",
+        "-b:v 1000k",
+        "-acodec aac",
         `-b:a ${audioBitRate}`,
+        "-bufsize 1000k",
         "-ar 44100",
+        "-pix_fmt yuv420p",
+        // "-shortest",
+        `-r ${frameRate}`,
       ])
       .complexFilter([
         "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file)

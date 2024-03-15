@@ -18,6 +18,7 @@ const audioFileExtname = ".mp3";
 const imageFileExtName = ".png";
 const videoFileExtName = ".mp4";
 const backgroundAudioFileName = "background.mp3";
+const useXLEndpoint = true;
 // Global Variables
 let outputTimeStamp = Math.floor(Date.now() / 1000);
 let finalOutput = "";
@@ -182,7 +183,7 @@ async function ProcessScript(
       if (!skipImg) {
         let imgPrompt = row[2]; // "A dark and eerie factory with smoke billowing out of the chimneys in the middle of a deserted town.";
         console.log("Generating Img Asset " + idx);
-        await generate_images(imgPrompt, idx, isShort, isVideoClip);
+        await generate_images(imgPrompt, idx, isShort, isVideoClip, useXLEndpoint);
       }
 
       if (!skipAudio) {

@@ -7,7 +7,13 @@ const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 
-async function GenerateImage(imgPrompt, idx, isShort, isVideoClip) {
+async function GenerateImage(
+  imgPrompt,
+  idx,
+  isShort,
+  isVideoClip,
+  useXLEndpoint
+) {
   try {
     let imgPath = `input/image-${idx.toString().padStart(2, 0)}.png`;
     let videoPath = `input/video-${idx.toString().padStart(2, 0)}.mp4`;
@@ -19,41 +25,59 @@ async function GenerateImage(imgPrompt, idx, isShort, isVideoClip) {
     } else {
       let selectedWidth = 0;
       let selectedHeight = 0;
+      let resizeWidth = 0;
+      let resizeHeight = 0;
 
-      if (isShort) {
-        selectedWidth = configs.StabilityAI.ShortWidth;
-        selectedHeight = configs.StabilityAI.ShortHeight;
-      } else {
-        selectedWidth = configs.StabilityAI.Width;
-        selectedHeight = configs.StabilityAI.Height;
-      }
-
-      if (isVideoClip) {
-        // currently API only works with 1024x576 or 576x1024 combinations
-        if (isShort) {
-          selectedWidth = configs.StabilityAI.ShortVideoWidth;
-          selectedHeight = configs.StabilityAI.ShortVideoHeight;
-        } else {
-          selectedWidth = configs.StabilityAI.VideoWidth;
-          selectedHeight = configs.StabilityAI.VideoHeight;
-        }
-      } else {
-        // legacy code
+      if (useXLEndpoint) {
         if (isShort) {
           selectedWidth = configs.StabilityAI.ShortWidth;
           selectedHeight = configs.StabilityAI.ShortHeight;
+          resizeWidth = configs.StabilityAI.ShortVideoWidth;
+          resizeHeight = configs.StabilityAI.ShortVideoHeight;
         } else {
           selectedWidth = configs.StabilityAI.Width;
           selectedHeight = configs.StabilityAI.Height;
+          resizeWidth = configs.StabilityAI.VideoWidth;
+          resizeHeight = configs.StabilityAI.VideoHeight;
         }
+        await GeneratePNGAndResize(
+          imgPath,
+          imgPrompt,
+          selectedHeight,
+          selectedWidth,
+          resizeHeight,
+          resizeWidth,
+          true,
+          isVideoClip
+        );
+      } else {
+        if (isVideoClip) {
+          // currently API only works with 1024x576 or 576x1024 combinations
+          if (isShort) {
+            selectedWidth = configs.StabilityAI.ShortVideoWidth;
+            selectedHeight = configs.StabilityAI.ShortVideoHeight;
+          } else {
+            selectedWidth = configs.StabilityAI.VideoWidth;
+            selectedHeight = configs.StabilityAI.VideoHeight;
+          }
+        } else {
+          // legacy code
+          if (isShort) {
+            selectedWidth = configs.StabilityAI.ShortWidth;
+            selectedHeight = configs.StabilityAI.ShortHeight;
+          } else {
+            selectedWidth = configs.StabilityAI.Width;
+            selectedHeight = configs.StabilityAI.Height;
+          }
+        }
+        await GeneratePNG(
+          imgPath,
+          imgPrompt,
+          selectedHeight,
+          selectedWidth,
+          isVideoClip
+        );
       }
-      await GeneratePNG(
-        imgPath,
-        imgPrompt,
-        selectedHeight,
-        selectedWidth,
-        isVideoClip
-      );
 
       if (isVideoClip) {
         await sleep(3000);
@@ -139,9 +163,76 @@ async function GeneratePNG(
   //   .catch((error) => {
   //     console.error("Error resizing the image:", error);
   //   });
-    
+
   fs.writeFileSync(imgPath, binaryData);
   console.log("Img Asset Generated");
+}
+
+async function GeneratePNGAndResize(
+  imgPath,
+  imgPrompt,
+  selectedHeight,
+  selectedWidth,
+  resizeHeight,
+  resizeWidth,
+  useXLEndpoint,
+  isVideoClip
+) {
+  // Query StableDiffusion API with img prompt > get images
+  // https://stability.ai/
+  // https://www.pixelconverter.com/aspect-ratio-to-pixels-converter/
+  // Use XL if not video clip to generate better images
+  // Legacy endpoint supports width x height combinations for ImageToVideo conversion
+  const StabilityAIEndpoint = useXLEndpoint
+    ? configs.StabilityAI.EndpointXL
+    : configs.StabilityAI.EndpointLegacy;
+  console.log(`Calling StabilityAIEndpoint: ${StabilityAIEndpoint}`);
+  const StabilityAISecret = configs.StabilityAI.Secret;
+  const options = {
+    method: "POST",
+    url: `${StabilityAIEndpoint}`,
+    headers: {
+      Authorization: `${StabilityAISecret}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    data: {
+      cfg_scale: configs.StabilityAI.CFGScale,
+      clip_guidance_preset: configs.StabilityAI.ClipGuidancePreset,
+      width: selectedWidth,
+      height: selectedHeight,
+      sampler: configs.StabilityAI.Sampler,
+      samples: configs.StabilityAI.Samples,
+      seed: configs.StabilityAI.Seed,
+      steps: configs.StabilityAI.Steps,
+      style_preset: configs.StabilityAI.StylePreset,
+      text_prompts: [
+        {
+          text: imgPrompt,
+          weight: 1,
+        },
+        {
+          text: configs.StabilityAI.AdditionalPrompt,
+          weight: 1,
+        },
+        {
+          text: configs.StabilityAI.NegativePrompt,
+          weight: -1,
+        },
+      ],
+    },
+  };
+  let imgResp = await axios.request(options);
+  base64String = imgResp.data.artifacts[0].base64;
+  let binaryData = Buffer.from(base64String, "base64");
+
+  const tempFilePath = path.join(__dirname, "tmp.png");
+  fs.writeFileSync(tempFilePath, binaryData);
+
+  await sharp(tempFilePath).resize(resizeWidth, resizeHeight).toFile(imgPath);
+
+  fs.unlinkSync(tempFilePath);
+  console.log("Img Asset Generated and Resized");
 }
 
 async function GenerateVideoClip(imgPath, videoPath) {

@@ -34,7 +34,7 @@ const configs = {
     AdditionalPromptLegacy:
       "horror movie,scary,spooky,horrific,terrifying,dark nocturnal atmosphere",
     NegativePrompt:
-      "(close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw",
+      "cartoon, comic strip, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw",
     NegativePromptLegacy:
       "disfigured, bad art, deformed, poorly drawn, extra limbs, blurry, bad anatomy, disfigured, poorly drawn face, poorly drawn hands, missing limbs, floating limbs, disjointed limbs, deformed hands, blurred, out of focus, long neck, long body, distorted, bad hands, error, extra digit, fewer digits, Lots of hands, extra limbs, extra fingers, conjoined fingers, deformed fingers, imperfect eyes, skewed eyes, unnatural face, unbalanced body, unnatural body, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, missing fingers, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw",
     Width: 1344, // 1024,

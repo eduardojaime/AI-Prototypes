@@ -64,15 +64,11 @@ async function processFiles(
         );
       }
       console.log("Finished Merging Video and Audio");
-      console.log(videoFiles);
-      console.log(outputPath);
       videoFiles.push(outputPath);
-      console.log(videoFiles);
     } catch (error) {
       console.error("Error processing files:", error.message);
       throw error;
     }
-    console.log(videoFiles);
   }
 
   try {

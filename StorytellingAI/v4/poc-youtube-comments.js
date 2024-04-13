@@ -2,6 +2,7 @@ require("dotenv").config();
 const { google } = require("googleapis");
 const express = require("express");
 const open = require("open"); // Version 8.4.2 works with this code
+const fs = require("fs");
 
 const OAuth2 = google.auth.OAuth2;
 const YOUTUBE_VIDEO_TEST = process.env.YOUTUBE_VIDEO_TEST;
@@ -19,6 +20,7 @@ app.get("/auth/youtube/callback", async (req, res) => {
   const { code } = req.query;
   if (code) {
     try {
+      fs.writeFileSync("token.json", JSON.stringify({ code }));
       const { tokens } = await oauth2Client.getToken(code);
       await oauth2Client.setCredentials(tokens);
       console.log("Authentication successful. You can now make API calls.");

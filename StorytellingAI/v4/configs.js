@@ -17,40 +17,54 @@ const configs = {
     SystemPrompt: "chat/system.txt",
   },
   StabilityAI: {
-    EndpointImg2VideoGeneration:
-      "https://api.stability.ai/v2alpha/generation/image-to-video",
-    EndpointImg2VideoResult:
-      "https://api.stability.ai/v2alpha/generation/image-to-video/result",
-    EndpointXL:
-      "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
-    EndpointLegacy:
-      "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image",
+    Endpoints: {
+      Text2Image:
+        "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image",
+      Text2ImageXL:
+        "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+      Image2Video: "https://api.stability.ai/v2alpha/generation/image-to-video",
+      Image2VideoResult:
+        "https://api.stability.ai/v2alpha/generation/image-to-video/result",
+    },
+    Prompts: {
+      Horror: {
+        Additional:
+          "((style of Ridley Scott)), ((grotesque)), nightmarish, hellish landscape, terrifying, dark nocturnal atmosphere, ((gloomy, dark red, dark green))",
+        Negative:
+          "cartoon, comic strip, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw, deformed",
+      },
+    },
+    Dimensions: {
+      Image: {
+        Horizontal: {
+          Width: 1344,
+          Height: 768,
+        },
+        Vertical: {
+          Width: 768,
+          Height: 1344,
+        },
+      },
+      Video: {
+        Horizontal: {
+          Width: 1024,
+          Height: 576,
+        },
+        Vertical: {
+          Width: 576,
+          Height: 1024,
+        },
+      },
+    },
     Secret: process.env.STABILITYAI_SECRET,
     StylePreset: "cinematic",
     Sampler: "K_DPM_2_ANCESTRAL",
-    AdditionalPrompt:
-      "((grotesque)), nightmarish, hellish landscape, terrifying,horrific,terrifying,dark nocturnal atmosphere,2000s atmosphere, (((((gloomy, dark, black))))), (camera noise, grainy texture, textured, glitch effect), dark red, dark green",
-    Misc: "((style of H.R. Giger, grotesque)), NIGHTMARISH, ((horror movie)),liminal space",
-    AdditionalPromptLegacy:
-      "horror movie,scary,spooky,horrific,terrifying,dark nocturnal atmosphere",
-    NegativePrompt:
-      "cartoon, comic strip, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw",
-    NegativePromptLegacy:
-      "disfigured, bad art, deformed, poorly drawn, extra limbs, blurry, bad anatomy, disfigured, poorly drawn face, poorly drawn hands, missing limbs, floating limbs, disjointed limbs, deformed hands, blurred, out of focus, long neck, long body, distorted, bad hands, error, extra digit, fewer digits, Lots of hands, extra limbs, extra fingers, conjoined fingers, deformed fingers, imperfect eyes, skewed eyes, unnatural face, unbalanced body, unnatural body, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, missing fingers, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw",
-    Width: 1344, // 1024,
-    Height: 768, // 576,
-    ShortWidth: 768,
-    ShortHeight: 1344,
-    VideoWidth: 1024, // only 1024x576 or 576x1024
-    VideoHeight: 576,
-    ShortVideoWidth: 576,
-    ShortVideoHeight: 1024,
     Samples: 1,
     Steps: 50,
     Seed: 0,
     CFGScale: 7,
     ClipGuidancePreset: "SIMPLE",
-    MotionBucketId: 127 // default
+    MotionBucketId: 127, // default
   },
   ElevenLabs: {
     Endpoint: "https://api.elevenlabs.io/v1/text-to-speech",

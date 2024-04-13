@@ -30,16 +30,17 @@ async function GenerateImage(
 
       if (useXLEndpoint) {
         if (isShort) {
-          selectedWidth = configs.StabilityAI.ShortWidth;
-          selectedHeight = configs.StabilityAI.ShortHeight;
-          resizeWidth = configs.StabilityAI.ShortVideoWidth;
-          resizeHeight = configs.StabilityAI.ShortVideoHeight;
+          selectedWidth = configs.StabilityAI.Dimensions.Image.Vertical.Width; //ShortWidth;
+          selectedHeight = configs.StabilityAI.Dimensions.Image.Vertical.Height; //.ShortHeight;
+          resizeWidth = configs.StabilityAI.Dimensions.Video.Vertical.Width; //.ShortVideoWidth;
+          resizeHeight = configs.StabilityAI.Dimensions.Video.Vertical.Height; //.ShortVideoHeight;
         } else {
-          selectedWidth = configs.StabilityAI.Width;
-          selectedHeight = configs.StabilityAI.Height;
-          resizeWidth = configs.StabilityAI.VideoWidth;
-          resizeHeight = configs.StabilityAI.VideoHeight;
+          selectedWidth = configs.StabilityAI.Dimensions.Image.Horizontal.Width; //.Width;
+          selectedHeight = configs.StabilityAI.Dimensions.Image.Horizontal.Height; //.Height;
+          resizeWidth = configs.StabilityAI.Dimensions.Video.Horizontal.Width; //.VideoWidth;
+          resizeHeight = configs.StabilityAI.Dimensions.Video.Horizontal.Height; //.VideoHeight;
         }
+        console.log("resizing");
         await GeneratePNGAndResize(
           imgPath,
           imgPrompt,
@@ -47,27 +48,27 @@ async function GenerateImage(
           selectedWidth,
           resizeHeight,
           resizeWidth,
-          true,
+          useXLEndpoint,
           isVideoClip
         );
       } else {
         if (isVideoClip) {
           // currently API only works with 1024x576 or 576x1024 combinations
           if (isShort) {
-            selectedWidth = configs.StabilityAI.ShortVideoWidth;
-            selectedHeight = configs.StabilityAI.ShortVideoHeight;
+            selectedWidth = configs.StabilityAI.Dimensions.Video.Vertical.Width; //.ShortVideoWidth;
+            selectedHeight = configs.StabilityAI.Dimensions.Video.Vertical.Height; //.ShortVideoHeight;
           } else {
-            selectedWidth = configs.StabilityAI.VideoWidth;
-            selectedHeight = configs.StabilityAI.VideoHeight;
+            selectedWidth = configs.StabilityAI.Dimensions.Video.Horizontal.Width; //.VideoWidth;
+            selectedHeight = configs.StabilityAI.Dimensions.Video.Horizontal.Height; //.VideoHeight;
           }
         } else {
           // legacy code
           if (isShort) {
-            selectedWidth = configs.StabilityAI.ShortWidth;
-            selectedHeight = configs.StabilityAI.ShortHeight;
+            selectedWidth = configs.StabilityAI.Dimensions.Image.Vertical.Width; //.ShortWidth;
+            selectedHeight = configs.StabilityAI.Dimensions.Image.Vertical.Height; //.ShortHeight;
           } else {
-            selectedWidth = configs.StabilityAI.Width;
-            selectedHeight = configs.StabilityAI.Height;
+            selectedWidth = configs.StabilityAI.Dimensions.Image.Horizontal.Width; //.Width;
+            selectedHeight = configs.StabilityAI.Dimensions.Image.Horizontal.Height; //.Height;
           }
         }
         await GeneratePNG(
@@ -109,8 +110,8 @@ async function GeneratePNG(
   // Use XL if not video clip to generate better images
   // Legacy endpoint supports width x height combinations for ImageToVideo conversion
   const StabilityAIEndpoint = isVideoClip
-    ? configs.StabilityAI.EndpointLegacy
-    : configs.StabilityAI.EndpointXL;
+    ? configs.StabilityAI.Endpoints.Text2Image
+    : configs.StabilityAI.Endpoints.Text2ImageXL;
   const StabilityAISecret = configs.StabilityAI.Secret;
   const options = {
     method: "POST",
@@ -136,11 +137,11 @@ async function GeneratePNG(
           weight: 1,
         },
         {
-          text: configs.StabilityAI.AdditionalPrompt,
+          text: configs.StabilityAI.Prompts.Horror.Additional,
           weight: 1,
         },
         {
-          text: configs.StabilityAI.NegativePrompt,
+          text: configs.StabilityAI.Prompts.Horror.Negative,
           weight: -1,
         },
       ],
@@ -184,8 +185,8 @@ async function GeneratePNGAndResize(
   // Use XL if not video clip to generate better images
   // Legacy endpoint supports width x height combinations for ImageToVideo conversion
   const StabilityAIEndpoint = useXLEndpoint
-    ? configs.StabilityAI.EndpointXL
-    : configs.StabilityAI.EndpointLegacy;
+    ? configs.StabilityAI.Endpoints.Text2ImageXL
+    : configs.StabilityAI.Endpoints.Text2Image;
   console.log(`Calling StabilityAIEndpoint: ${StabilityAIEndpoint}`);
   const StabilityAISecret = configs.StabilityAI.Secret;
   const options = {
@@ -212,16 +213,17 @@ async function GeneratePNGAndResize(
           weight: 1,
         },
         {
-          text: configs.StabilityAI.AdditionalPrompt,
+          text: configs.StabilityAI.Prompts.Horror.Additional,
           weight: 1,
         },
         {
-          text: configs.StabilityAI.NegativePrompt,
+          text: configs.StabilityAI.Prompts.Horror.Negative,
           weight: -1,
         },
       ],
     },
   };
+  console.log("getting png")
   let imgResp = await axios.request(options);
   base64String = imgResp.data.artifacts[0].base64;
   let binaryData = Buffer.from(base64String, "base64");
@@ -255,7 +257,7 @@ async function GenerateVideoClip(imgPath, videoPath) {
 
   const optPost = {
     method: "POST",
-    url: `${configs.StabilityAI.EndpointImg2VideoGeneration}`,
+    url: `${configs.StabilityAI.Endpoints.Image2Video}`,
     // pull headers from form-data getHeaders() method
     headers: { ...formHeaders },
     data: form,
@@ -276,7 +278,7 @@ async function GenerateVideoClip(imgPath, videoPath) {
 
   const optGet = {
     method: "GET",
-    url: `${configs.StabilityAI.EndpointImg2VideoResult}/${id}`,
+    url: `${configs.StabilityAI.Endpoints.Image2VideoResult}/${id}`,
     headers: {
       authorization: `${StabilityAISecret}`,
       Accept: "application/json",

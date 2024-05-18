@@ -92,10 +92,10 @@ async function Main() {
 
   isVideoClip =
     (await GetAnswer(
-      "Do you want to generate a still image video? (No StableVideoDiffusion)"
+      "Do you want to generate a StableVideoDiffusion video?"
     )) === "Y"
-      ? false
-      : true;
+      ? true
+      : false;
 
   let script = await asset_generator_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
   let scriptArr = script.split(/\r\n|\r|\n/);

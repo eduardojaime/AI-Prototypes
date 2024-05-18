@@ -52,4 +52,4 @@ async function GenerateAudio(audioPrompt, idx, language, isMale) {
   }
 }
 
-module.exports = GenerateAudio;
+module.exports = { GenerateAudio };

@@ -1,8 +1,8 @@
 // Custom modules
-const generate_images = require("./assets-generator-image");
-const generate_audio = require("./assets-generator-audio");
-const generate_script = require("./assets-generator-script");
-const generate_video = require("./assets-generator-video");
+const asset_generator_img = require("./assets-generator-image");
+const asset_generator_audio = require("./assets-generator-audio");
+const asset_generator_script = require("./assets-generator-script");
+const asset_generator_video = require("./assets-generator-video");
 // Required npm modules
 const prompt = require("prompt");
 const fs = require("fs");
@@ -97,7 +97,7 @@ async function Main() {
       ? false
       : true;
 
-  let script = await generate_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
+  let script = await asset_generator_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
   let scriptArr = script.split(/\r\n|\r|\n/);
 
   if (isShort == true) {
@@ -183,13 +183,13 @@ async function ProcessScript(
       if (!skipImg) {
         let imgPrompt = row[2]; // "A dark and eerie factory with smoke billowing out of the chimneys in the middle of a deserted town.";
         console.log("Generating Img Asset " + idx);
-        await generate_images(imgPrompt, idx, isShort, isVideoClip, useXLEndpoint);
+        await asset_generator_img.GenerateImage(imgPrompt, idx, isShort, isVideoClip, useXLEndpoint);
       }
 
       if (!skipAudio) {
         let audioPrompt = row[audioIdx]; // "There was a young man named Jorge who lived in a small town on the outskirts of Ciudad Juarez.";
         console.log("Generating Audio Asset " + idx);
-        await generate_audio(audioPrompt, idx, language, isMale);
+        await asset_generator_audio.GenerateAudio(audioPrompt, idx, language, isMale);
       }
 
       idx++;
@@ -242,7 +242,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
 
   if (frameFiles.length == audioFiles.length && frameFiles.length > 0) {
     console.log("Images and Audio files match");
-    await generate_video(
+    await asset_generator_video.processFiles(
       audioFiles,
       frameFiles,
       outputFolder,

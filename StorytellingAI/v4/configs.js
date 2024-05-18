@@ -22,9 +22,9 @@ const configs = {
         "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image",
       Text2ImageXL:
         "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
-      Image2Video: "https://api.stability.ai/v2alpha/generation/image-to-video",
+      Image2Video: "https://api.stability.ai/v2beta/image-to-video",
       Image2VideoResult:
-        "https://api.stability.ai/v2alpha/generation/image-to-video/result",
+        "https://api.stability.ai/v2beta/image-to-video/result",
     },
     Prompts: {
       Horror: {

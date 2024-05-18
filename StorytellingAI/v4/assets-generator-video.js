@@ -19,7 +19,7 @@ async function getDuration(filePath) {
   return metadata.format.duration;
 }
 
-async function processFiles(
+async function ProcessFiles(
   audioFiles,
   frameFiles,
   inputFolder,
@@ -264,4 +264,4 @@ async function addBackgroundEffect(
   });
 }
 
-module.exports = processFiles;
+module.exports = { ProcessFiles };

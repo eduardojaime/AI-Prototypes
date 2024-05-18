@@ -36,7 +36,8 @@ async function GenerateImage(
           resizeHeight = configs.StabilityAI.Dimensions.Video.Vertical.Height; //.ShortVideoHeight;
         } else {
           selectedWidth = configs.StabilityAI.Dimensions.Image.Horizontal.Width; //.Width;
-          selectedHeight = configs.StabilityAI.Dimensions.Image.Horizontal.Height; //.Height;
+          selectedHeight =
+            configs.StabilityAI.Dimensions.Image.Horizontal.Height; //.Height;
           resizeWidth = configs.StabilityAI.Dimensions.Video.Horizontal.Width; //.VideoWidth;
           resizeHeight = configs.StabilityAI.Dimensions.Video.Horizontal.Height; //.VideoHeight;
         }
@@ -56,19 +57,25 @@ async function GenerateImage(
           // currently API only works with 1024x576 or 576x1024 combinations
           if (isShort) {
             selectedWidth = configs.StabilityAI.Dimensions.Video.Vertical.Width; //.ShortVideoWidth;
-            selectedHeight = configs.StabilityAI.Dimensions.Video.Vertical.Height; //.ShortVideoHeight;
+            selectedHeight =
+              configs.StabilityAI.Dimensions.Video.Vertical.Height; //.ShortVideoHeight;
           } else {
-            selectedWidth = configs.StabilityAI.Dimensions.Video.Horizontal.Width; //.VideoWidth;
-            selectedHeight = configs.StabilityAI.Dimensions.Video.Horizontal.Height; //.VideoHeight;
+            selectedWidth =
+              configs.StabilityAI.Dimensions.Video.Horizontal.Width; //.VideoWidth;
+            selectedHeight =
+              configs.StabilityAI.Dimensions.Video.Horizontal.Height; //.VideoHeight;
           }
         } else {
           // legacy code
           if (isShort) {
             selectedWidth = configs.StabilityAI.Dimensions.Image.Vertical.Width; //.ShortWidth;
-            selectedHeight = configs.StabilityAI.Dimensions.Image.Vertical.Height; //.ShortHeight;
+            selectedHeight =
+              configs.StabilityAI.Dimensions.Image.Vertical.Height; //.ShortHeight;
           } else {
-            selectedWidth = configs.StabilityAI.Dimensions.Image.Horizontal.Width; //.Width;
-            selectedHeight = configs.StabilityAI.Dimensions.Image.Horizontal.Height; //.Height;
+            selectedWidth =
+              configs.StabilityAI.Dimensions.Image.Horizontal.Width; //.Width;
+            selectedHeight =
+              configs.StabilityAI.Dimensions.Image.Horizontal.Height; //.Height;
           }
         }
         await GeneratePNG(
@@ -223,7 +230,7 @@ async function GeneratePNGAndResize(
       ],
     },
   };
-  console.log("getting png")
+  console.log("getting png");
   let imgResp = await axios.request(options);
   base64String = imgResp.data.artifacts[0].base64;
   let binaryData = Buffer.from(base64String, "base64");
@@ -298,4 +305,4 @@ function sleep(ms) {
   });
 }
 
-module.exports = GenerateImage;
+module.exports = { GenerateImage };

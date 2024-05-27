@@ -242,7 +242,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
 
   if (frameFiles.length == audioFiles.length && frameFiles.length > 0) {
     console.log("Images and Audio files match");
-    await asset_generator_video.processFiles(
+    await asset_generator_video.ProcessFiles(
       audioFiles,
       frameFiles,
       outputFolder,

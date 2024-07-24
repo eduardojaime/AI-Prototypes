@@ -70,9 +70,9 @@ const configs = {
     Endpoint: "https://api.elevenlabs.io/v1/text-to-speech",
     Secret: process.env.ELEVENLABS_SECRET,
     MaleVoiceId: "RMSpIJWPsZD2Oq4s7dTo",
-    FemaleVoiceId: "21m00Tcm4TlvDq8ikWAM", // "XgemEVqDkz11K6s6rSgO",
+    FemaleVoiceId: "eIKNahp1xaNPAxRozkKs", // "XgemEVqDkz11K6s6rSgO",
     MonolingualModelId: "eleven_monolingual_v1",
-    MultilingualModelId: "eleven_multilingual_v1",
+    MultilingualModelId: "eleven_multilingual_v1", // v2 available but not tested
     VoiceSettings: {
       Stability: "1.0",
       Similarity: "1.0",

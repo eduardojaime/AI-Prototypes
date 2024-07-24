@@ -3,9 +3,13 @@
 const configs = require("./configs");
 const axios = require("axios");
 const fs = require("fs");
+// Programmatically add a break at the end of the speech
+// https://help.elevenlabs.io/hc/en-us/articles/13416374683665-How-can-I-add-pauses
+const breakTime = '<break time="0.5s" />';
 
 async function GenerateAudio(audioPrompt, idx, language, isMale) {
   try {
+    audioPrompt = audioPrompt + breakTime;
     if (fs.existsSync(`input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`)) {
       console.log(
         `File Exists: input/audio-${idx

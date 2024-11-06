@@ -14,7 +14,7 @@ const longAssetsFolder = "./input/longassets";
 const shortAssetsFolder = "./input/shortassets";
 const outputFolder = "./output"; // path.join(__dirname, "output");
 const inputFolder = "./input";
-const audioFileExtname = ".mp3";
+const audioFileExtName = ".mp3";
 const imageFileExtName = ".png";
 const videoFileExtName = ".mp4";
 const backgroundAudioFileName = "background.mp3";
@@ -231,7 +231,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
   // Audio
   const mpegFiles = files.filter(
     (file) =>
-      path.extname(file).toLowerCase() === audioFileExtname &&
+      path.extname(file).toLowerCase() === audioFileExtName &&
       path.basename(file) !== backgroundAudioFileName &&
       path.basename(file).includes(language)
   );

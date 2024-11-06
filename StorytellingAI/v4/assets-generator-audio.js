@@ -52,7 +52,10 @@ async function GenerateAudio(audioPrompt, idx, language, isMale) {
       console.log("Audio Asset Generated");
     }
   } catch (ex) {
-    console.log("Error in Eleven Labs: " + ex.response.data);
+    if (ex.response.data) 
+      console.log("Error in Eleven Labs: " + ex.response.data);
+    else 
+      console.log("Error in Eleven Labs: " + ex.response);
   }
 }
 

@@ -1,6 +1,7 @@
 #Channel Assets
 channel
 archived
+output
 *.png
 *.mpeg
 *.csv

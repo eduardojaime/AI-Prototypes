@@ -40,20 +40,14 @@ const SettingsEnum = {
   AudioIdxES: "1",
   ShortIncrement: configs.Settings.ShortIncrement,
 };
-
-async function Setup() {
-  fs.mkdirSync(outputFolder, { recursive: true });
-  fs.mkdirSync(inputFolder, { recursive: true });
-  prompt.start();
-  audioFiles = [];
-  imageFiles = [];
-  videoFiles = [];
+// INPUTS
+async function GetAnswer(question) {
+  console.log(question);
+  const { answer } = await prompt.get(["answer"]);
+  return answer.toUpperCase();
 }
 
-async function Main() {
-  Setup();
-
-  console.log("Welcome to StorytellingAI's Video Generation Engine");
+async function SelectLanguage() {
   console.log("Select a Language: ");
   let selectedLanguage = await GetAnswer(
     "Enter 1 for English or 2 for Spanish"
@@ -68,17 +62,21 @@ async function Main() {
       audioIdx = SettingsEnum.AudioIdxES;
       break;
     default:
-      console.log("None selected, setting default as spanish (ES).");
+      console.log("None selected, setting default as Spanish (ES).");
       language = SettingsEnum.LangES;
       audioIdx = SettingsEnum.AudioIdxES;
       break;
   }
+}
 
+async function SelectNarrationType() {
   isMale =
     (await GetAnswer("Is this a Female narration?")) === "Y"
       ? (console.log("Female Voice Selected"), false)
       : (console.log("Male Voice Selected"), true);
+}
 
+async function SelectFormat() {
   isShort =
     (await GetAnswer("Is this a YouTube Short?")) === "Y"
       ? (console.log("Short Format Selected (Vertical Video)"),
@@ -89,81 +87,15 @@ async function Main() {
         (outputFileNamePrefix = "VIDEO-HORROR"),
         await RestoreFiles(longAssetsFolder, inputFolder),
         false);
+}
 
+async function SelectVideoClipOption() {
   isVideoClip =
     (await GetAnswer(
       "Do you want to generate a StableVideoDiffusion video?"
-    )) === "Y"
-      ? true
-      : false;
-
-  let script = await asset_generator_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
-  let scriptArr = script.split(/\r\n|\r|\n/);
-
-  if (isShort == true) {
-    let increment = SettingsEnum.ShortIncrement;
-    let startIdx = 2; // skip table headers and ---
-    // let isWait1 = await GetAnswer(`Starting short generation. Press any key to continue.`);
-
-    for (let i = startIdx; i < scriptArr.length; i += increment) {
-      console.log(
-        `Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`
-      );
-      // take three
-      let sliceArr = scriptArr.slice(i, i + increment);
-      // e.g. 2 + 4 = 6, position 6 is the second short in the 0-based index array
-      if (i >= startIdx + increment) {
-        fs.appendFileSync(inputScriptPath, sliceArr.join("\n"));
-      }
-
-      // process
-      console.log(`Generating Image and Audio Files ${language}`);
-      await ProcessScript(
-        sliceArr,
-        false,
-        false,
-        language,
-        audioIdx,
-        isMale,
-        isVideoClip
-      );
-
-      // generate
-      console.log(`Generating Video Output ${language}`);
-      audioFiles = [];
-      frameFiles = [];
-      await GenerateVideoOutput(language, isVideoClip);
-      // cleanup
-      await CleanUp();
-      await RestoreFiles(shortAssetsFolder, inputFolder);
-    }
-  } else {
-    console.log("Generating Image Files");
-    await ProcessScript(scriptArr, false, true, "", -1, false, isVideoClip);
-
-    console.log(`Generating Audio Files ${language}`);
-    await ProcessScript(
-      scriptArr,
-      true,
-      false,
-      language,
-      audioIdx,
-      isMale,
-      isVideoClip
-    );
-
-    console.log(`Generating Video Output ${language}`);
-    await GenerateVideoOutput(language, isVideoClip);
-  }
-  await CleanUp();
+    )) === "Y";
 }
-
-async function GetAnswer(question) {
-  console.log(question);
-  const { answer } = await prompt.get(["answer"]);
-  return answer.toUpperCase();
-}
-
+// PROCESSING AND GENERATION
 async function ProcessScript(
   scriptArr,
   skipImg,
@@ -183,18 +115,76 @@ async function ProcessScript(
       if (!skipImg) {
         let imgPrompt = row[2]; // "A dark and eerie factory with smoke billowing out of the chimneys in the middle of a deserted town.";
         console.log("Generating Img Asset " + idx);
-        await asset_generator_img.GenerateImage(imgPrompt, idx, isShort, isVideoClip, useXLEndpoint);
+        await asset_generator_img.GenerateImage(
+          imgPrompt,
+          idx,
+          isShort,
+          isVideoClip,
+          useXLEndpoint
+        );
       }
 
       if (!skipAudio) {
         let audioPrompt = row[audioIdx]; // "There was a young man named Jorge who lived in a small town on the outskirts of Ciudad Juarez.";
         console.log("Generating Audio Asset " + idx);
-        await asset_generator_audio.GenerateAudio(audioPrompt, idx, language, isMale);
+        await asset_generator_audio.GenerateAudio(
+          audioPrompt,
+          idx,
+          language,
+          isMale
+        );
       }
 
       idx++;
     }
   }
+}
+
+async function GenerateShortVideos(scriptArr) {
+  let increment = SettingsEnum.ShortIncrement;
+  let startIdx = 2; // skip table headers and ---
+  for (let i = startIdx; i < scriptArr.length; i += increment) {
+    console.log(
+      `Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`
+    );
+    let sliceArr = scriptArr.slice(i, i + increment);
+    if (i >= startIdx + increment) {
+      fs.appendFileSync(inputScriptPath, sliceArr.join("\n"));
+    }
+    console.log(`Generating Image and Audio Files ${language}`);
+    await ProcessScript(
+      sliceArr,
+      false,
+      false,
+      language,
+      audioIdx,
+      isMale,
+      isVideoClip
+    );
+    console.log(`Generating Video Output ${language}`);
+    audioFiles = [];
+    frameFiles = [];
+    await GenerateVideoOutput(language, isVideoClip);
+    await CleanUp();
+    await RestoreFiles(shortAssetsFolder, inputFolder);
+  }
+}
+
+async function GenerateLongVideo(scriptArr) {
+  console.log("Generating Image Files");
+  await ProcessScript(scriptArr, false, true, "", -1, false, isVideoClip);
+  console.log(`Generating Audio Files ${language}`);
+  await ProcessScript(
+    scriptArr,
+    true,
+    false,
+    language,
+    audioIdx,
+    isMale,
+    isVideoClip
+  );
+  console.log(`Generating Video Output ${language}`);
+  await GenerateVideoOutput(language, isVideoClip);
 }
 
 async function GenerateVideoOutput(language, isVideoClip) {
@@ -258,6 +248,15 @@ async function GenerateVideoOutput(language, isVideoClip) {
     return; // allows for retry
   }
 }
+// FILE SETUP AND CLEANUP
+async function Setup() {
+  fs.mkdirSync(outputFolder, { recursive: true });
+  fs.mkdirSync(inputFolder, { recursive: true });
+  prompt.start();
+  audioFiles = [];
+  imageFiles = [];
+  videoFiles = [];
+}
 
 async function CleanUp() {
   let videoFolder = `./${outputFolder}/${outputTimeStamp}`;
@@ -296,6 +295,82 @@ async function RestoreFiles(assetsFolder, outputFolder) {
     fs.copyFileSync(sourceFile, targetFile);
   });
   console.log("Restored Initial Files");
+}
+// MAIN FUNCTION
+async function Main() {
+  Setup();
+
+  console.log("Welcome to StorytellingAI's Video Generation Engine");
+
+  await SelectLanguage(); // EN or ES
+  await SelectNarrationType(); // Male or Female Voice
+  await SelectFormat(); // SHORT or LONG FORM
+  // await selectVideoClipOption(); // Generate Video or Static Image Video
+
+  let script = await asset_generator_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
+  let scriptArr = script.split(/\r\n|\r|\n/);
+
+  if (isShort) {
+    await GenerateShortVideos(scriptArr);
+  } else {
+    await GenerateLongVideo(scriptArr);
+  }
+
+  // if (isShort == true) {
+  //   let increment = SettingsEnum.ShortIncrement;
+  //   let startIdx = 2; // skip table headers and ---
+
+  //   for (let i = startIdx; i < scriptArr.length; i += increment) {
+  //     console.log(
+  //       `Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`
+  //     );
+  //     // take three
+  //     let sliceArr = scriptArr.slice(i, i + increment);
+  //     // e.g. 2 + 4 = 6, position 6 is the second short in the 0-based index array
+  //     if (i >= startIdx + increment) {
+  //       fs.appendFileSync(inputScriptPath, sliceArr.join("\n"));
+  //     }
+
+  //     // process
+  //     console.log(`Generating Image and Audio Files ${language}`);
+  //     await ProcessScript(
+  //       sliceArr,
+  //       false,
+  //       false,
+  //       language,
+  //       audioIdx,
+  //       isMale,
+  //       isVideoClip
+  //     );
+
+  //     // generate
+  //     console.log(`Generating Video Output ${language}`);
+  //     audioFiles = [];
+  //     frameFiles = [];
+  //     await GenerateVideoOutput(language, isVideoClip);
+  //     // cleanup
+  //     await CleanUp();
+  //     await RestoreFiles(shortAssetsFolder, inputFolder);
+  //   }
+  // } else {
+  //   console.log("Generating Image Files");
+  //   await ProcessScript(scriptArr, false, true, "", -1, false, isVideoClip);
+
+  //   console.log(`Generating Audio Files ${language}`);
+  //   await ProcessScript(
+  //     scriptArr,
+  //     true,
+  //     false,
+  //     language,
+  //     audioIdx,
+  //     isMale,
+  //     isVideoClip
+  //   );
+
+  //   console.log(`Generating Video Output ${language}`);
+  //   await GenerateVideoOutput(language, isVideoClip);
+  // }
+  await CleanUp();
 }
 
 Main().catch((err) => {

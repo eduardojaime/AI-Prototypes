@@ -5,8 +5,10 @@ const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 const ffprobePath = require("@ffprobe-installer/ffprobe").path;
 const ffmpeg = require("fluent-ffmpeg");
 const musicMetadata = require("music-metadata");
-const frameRate = 24;
-const audioBitRate = "128k"; // "192k";
+const frameRate = 30; // Frame rate for smoother video
+const audioBitRate = "384k"; // Increased audio bitrate for better quality
+const videoBitRate = "8000k"; // Increased video bitrate for better quality
+const audioSampleRate = 48000; // Set audio sample rate to 48 kHz
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
@@ -105,8 +107,10 @@ async function mergeAudioAndImages(
       .outputOption("-tune stillimage")
       .audioCodec("aac")
       .audioBitrate(audioBitRate)
+      .videoBitrate(videoBitRate) // Set video bitrate
       .outputOptions("-pix_fmt yuv420p")
       .outputOptions("-shortest")
+      .outputOptions(`-ar ${audioSampleRate}`) // Set audio sample rate
       .videoFilters(selectedScale)
       .save(outputPath)
       .on("end", () => {
@@ -145,14 +149,14 @@ async function mergeVideoAndAudio(
       .input(audioPath)
       .outputOptions([
         "-vcodec libx264",
-        "-b:v 1000k",
+        `-b:v ${videoBitRate}`, // Set video bitrate
         "-acodec aac",
-        `-b:a ${audioBitRate}`,
-        "-bufsize 1000k",
-        "-ar 44100",
+        `-b:a ${audioBitRate}`, // Set audio bitrate
+        "-bufsize 8000k",
+        `-ar ${audioSampleRate}`, // Set audio sample rate
         "-pix_fmt yuv420p",
         "-shortest",
-        `-r ${frameRate}`,
+        `-r ${frameRate}`, // Set frame rate
       ])
       .videoFilters(selectedScale) // , slowMotionFilter) // removed to test now videos are 4 seconds
       .save(outputPath)
@@ -179,14 +183,14 @@ async function concatVideos(videoFiles, finalOutput, isVideoClip) {
         .inputOptions(["-f concat", "-safe 0"])
         .outputOptions([
           "-vcodec libx264",
-          "-b:v 1000k",
+          `-b:v ${videoBitRate}`, // Set video bitrate
           "-acodec aac",
-          `-b:a ${audioBitRate}`,
-          "-bufsize 1000k",
-          "-ar 44100",
+          `-b:a ${audioBitRate}`, // Set audio bitrate
+          "-bufsize 8000k",
+          `-ar ${audioSampleRate}`, // Set audio sample rate
           "-pix_fmt yuv420p",
           "-shortest",
-          `-r ${frameRate}`,
+          `-r ${frameRate}`, // Set frame rate
         ])
         // .outputOptions(["-af apad=pad_len=88200"])
         .save(finalOutput)
@@ -238,14 +242,13 @@ async function addBackgroundEffect(
       // Sets the audio sample rate to 44.1 kHz
       .outputOptions([
         "-vcodec libx264",
-        "-b:v 1000k",
+        `-b:v ${videoBitRate}`, // Set video bitrate
         "-acodec aac",
-        `-b:a ${audioBitRate}`,
-        "-bufsize 1000k",
-        "-ar 44100",
+        `-b:a ${audioBitRate}`, // Set audio bitrate
+        "-bufsize 8000k",
+        `-ar ${audioSampleRate}`, // Set audio sample rate
         "-pix_fmt yuv420p",
-        // "-shortest",
-        `-r ${frameRate}`,
+        `-r ${frameRate}`, // Set frame rate
       ])
       .complexFilter([
         "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file)

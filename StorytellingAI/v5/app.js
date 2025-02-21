@@ -95,11 +95,11 @@ async function SelectFormat() {
   isShort =
     (await GetAnswer("Is this a YouTube Short?")) === "Y"
       ? (console.log("Short Format Selected (Vertical Video)"),
-        (outputFileNamePrefix = "SHORTS-HORROR"),
+        (outputFileNamePrefix = selectedTheme.OutputFileNamePrefixShorts),
         await RestoreFiles(selectedTheme.AssetsFolderShorts, inputFolder),
         true)
       : (console.log("Long Format Selected (Horizontal Video)"),
-        (outputFileNamePrefix = "VIDEO-HORROR"),
+        (outputFileNamePrefix = selectedTheme.OutputFileNamePrefixLong),
         await RestoreFiles(selectedTheme.AssetsFolderLong, inputFolder),
         false);
 }
@@ -134,7 +134,8 @@ async function ProcessScript(
           imgPrompt,
           idx,
           isShort,
-          isVideoClip
+          isVideoClip,
+          selectedTheme
         );
       }
 
@@ -318,7 +319,7 @@ async function Main() {
 
   await SelectLanguage(); // EN or ES
   await SelectNarrationType(); // Male or Female Voice
-  await selectedTheme(); // Horror or Motivational
+  await SelectTheme(); // Horror or Motivational
   await SelectFormat(); // SHORT or LONG FORM
   // await selectVideoClipOption(); // Generate Video or Static Image Video
 

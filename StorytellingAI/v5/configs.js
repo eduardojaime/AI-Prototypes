@@ -74,6 +74,8 @@ const configs = {
     Horror: {
       AssetsFolderLong: "./input/assets_horror/long",
       AssetsFolderShorts: "./input/assets_horror/shorts",
+      OutputFileNamePrefixLong: "VIDEO-HORROR",
+      OutputFileNamePrefixShorts: "SHORTS-HORROR",
       BackgroundFile: "background.mp3",
       Prompts: {
         Additional:
@@ -83,8 +85,10 @@ const configs = {
       },
     },
     Motivational: {
-      AssetsFolderLong: "assets_motivational/long",
-      AssetsFolderShorts: "assets_motivational/shorts",
+      AssetsFolderLong: "./input/assets_motivational/long",
+      AssetsFolderShorts: "./input/assets_motivational/shorts",
+      OutputFileNamePrefixLong: "VIDEO-MOTIVATION",
+      OutputFileNamePrefixShorts: "SHORTS-MOTIVATION",
       BackgroundFile: "background.mp3",
       Prompts: {
         Additional:

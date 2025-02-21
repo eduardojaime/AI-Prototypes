@@ -26,14 +26,6 @@ const configs = {
       Image2VideoResult:
         "https://api.stability.ai/v2beta/image-to-video/result",
     },
-    Prompts: {
-      Horror: {
-        Additional:
-          "((style of Ridley Scott)), ((grotesque)), nightmarish, hellish landscape, terrifying, dark nocturnal atmosphere, ((eerie, grim, spooky, gloomy, dark red, dark green))",
-        Negative:
-          "cartoon, comic strip, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw, deformed",
-      },
-    },
     Dimensions: {
       Image: {
         Horizontal: {
@@ -77,6 +69,30 @@ const configs = {
       Stability: "1.0",
       Similarity: "1.0",
     },
+  },
+  Themes: {
+    Horror: {
+      AssetsFolderLong: "./input/assets_horror/long",
+      AssetsFolderShorts: "./input/assets_horror/shorts",
+      BackgroundFile: "background.mp3",
+      Prompts: {
+        Additional:
+          "((style of Ridley Scott)), ((grotesque)), nightmarish, hellish landscape, terrifying, dark nocturnal atmosphere, ((eerie, grim, spooky, gloomy, dark red, dark green))",
+        Negative:
+          "cartoon, comic strip, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw, deformed",
+      },
+    },
+    Motivational: {
+      AssetsFolderLong: "assets_motivational/long",
+      AssetsFolderShorts: "assets_motivational/shorts",
+      BackgroundFile: "background.mp3",
+      Prompts: {
+        Additional:
+          "uplifting, motivational, bright lights",
+        Negative:
+          "cartoon, comic strip, (close up), face portrait, self portrait, signature, watermark, jpeg artifacts, username, nudity, nsfw, deformed",
+      },
+    }
   },
 };
 

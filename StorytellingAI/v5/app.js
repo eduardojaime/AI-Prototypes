@@ -10,15 +10,13 @@ const path = require("path");
 const configs = require("./configs");
 // Global Constants
 const assetsFolder = "./input/assets";
-const longAssetsFolder = "./input/longassets";
-const shortAssetsFolder = "./input/shortassets";
-const outputFolder = "./output"; // path.join(__dirname, "output");
+const outputFolder = "./output";
 const inputFolder = "./input";
 const audioFileExtName = ".mp3";
 const imageFileExtName = ".png";
 const videoFileExtName = ".mp4";
 const backgroundAudioFileName = "background.mp3";
-const useXLEndpoint = true;
+
 // Global Variables
 let outputTimeStamp = Math.floor(Date.now() / 1000);
 let finalOutput = "";
@@ -31,6 +29,7 @@ let isMale = false;
 let isVideoClip = false;
 let language = "EN";
 let audioIdx = 0;
+let selectedTheme = {};
 let inputScriptPath = "input/response-multi.mdtext";
 // Enums
 const SettingsEnum = {
@@ -50,7 +49,7 @@ async function GetAnswer(question) {
 async function SelectLanguage() {
   console.log("Select a Language: ");
   let selectedLanguage = await GetAnswer(
-    "Enter 1 for English or 2 for Spanish"
+    "Select Language: 1 for English, 2 for Spanish"
   );
   switch (selectedLanguage) {
     case "1":
@@ -76,16 +75,32 @@ async function SelectNarrationType() {
       : (console.log("Male Voice Selected"), true);
 }
 
+async function SelectTheme() {
+  let themeIdx = await GetAnswer("Select a Theme: 1 for Horror, 2 for Motivational");
+  switch (themeIdx) {
+    case "1":
+      selectedTheme = configs.Themes.Horror;
+      break;
+    case "2":
+      selectedTheme = configs.Themes.Motivational;
+      break;
+    default:
+      console.log("None selected, setting default as Horror.");
+      selectedTheme = configs.Themes.Horror;
+      break;
+  } 
+}
+
 async function SelectFormat() {
   isShort =
     (await GetAnswer("Is this a YouTube Short?")) === "Y"
       ? (console.log("Short Format Selected (Vertical Video)"),
         (outputFileNamePrefix = "SHORTS-HORROR"),
-        await RestoreFiles(shortAssetsFolder, inputFolder),
+        await RestoreFiles(selectedTheme.AssetsFolderShorts, inputFolder),
         true)
       : (console.log("Long Format Selected (Horizontal Video)"),
         (outputFileNamePrefix = "VIDEO-HORROR"),
-        await RestoreFiles(longAssetsFolder, inputFolder),
+        await RestoreFiles(selectedTheme.AssetsFolderLong, inputFolder),
         false);
 }
 
@@ -119,8 +134,7 @@ async function ProcessScript(
           imgPrompt,
           idx,
           isShort,
-          isVideoClip,
-          useXLEndpoint
+          isVideoClip
         );
       }
 
@@ -166,7 +180,7 @@ async function GenerateShortVideos(scriptArr) {
     frameFiles = [];
     await GenerateVideoOutput(language, isVideoClip);
     await CleanUp();
-    await RestoreFiles(shortAssetsFolder, inputFolder);
+    await RestoreFiles(selectedTheme.AssetsFolderShorts, inputFolder);
   }
 }
 
@@ -304,6 +318,7 @@ async function Main() {
 
   await SelectLanguage(); // EN or ES
   await SelectNarrationType(); // Male or Female Voice
+  await selectedTheme(); // Horror or Motivational
   await SelectFormat(); // SHORT or LONG FORM
   // await selectVideoClipOption(); // Generate Video or Static Image Video
 
@@ -315,61 +330,6 @@ async function Main() {
   } else {
     await GenerateLongVideo(scriptArr);
   }
-
-  // if (isShort == true) {
-  //   let increment = SettingsEnum.ShortIncrement;
-  //   let startIdx = 2; // skip table headers and ---
-
-  //   for (let i = startIdx; i < scriptArr.length; i += increment) {
-  //     console.log(
-  //       `Step (i): ${i} Increment: ${increment} ArrLength: ${scriptArr.length} Press any key to continue.`
-  //     );
-  //     // take three
-  //     let sliceArr = scriptArr.slice(i, i + increment);
-  //     // e.g. 2 + 4 = 6, position 6 is the second short in the 0-based index array
-  //     if (i >= startIdx + increment) {
-  //       fs.appendFileSync(inputScriptPath, sliceArr.join("\n"));
-  //     }
-
-  //     // process
-  //     console.log(`Generating Image and Audio Files ${language}`);
-  //     await ProcessScript(
-  //       sliceArr,
-  //       false,
-  //       false,
-  //       language,
-  //       audioIdx,
-  //       isMale,
-  //       isVideoClip
-  //     );
-
-  //     // generate
-  //     console.log(`Generating Video Output ${language}`);
-  //     audioFiles = [];
-  //     frameFiles = [];
-  //     await GenerateVideoOutput(language, isVideoClip);
-  //     // cleanup
-  //     await CleanUp();
-  //     await RestoreFiles(shortAssetsFolder, inputFolder);
-  //   }
-  // } else {
-  //   console.log("Generating Image Files");
-  //   await ProcessScript(scriptArr, false, true, "", -1, false, isVideoClip);
-
-  //   console.log(`Generating Audio Files ${language}`);
-  //   await ProcessScript(
-  //     scriptArr,
-  //     true,
-  //     false,
-  //     language,
-  //     audioIdx,
-  //     isMale,
-  //     isVideoClip
-  //   );
-
-  //   console.log(`Generating Video Output ${language}`);
-  //   await GenerateVideoOutput(language, isVideoClip);
-  // }
   await CleanUp();
 }
 

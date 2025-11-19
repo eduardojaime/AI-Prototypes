@@ -14,6 +14,10 @@ ffmpeg.setFfprobePath(ffprobePath);
 
 const verticalScale = "scale=1080:1920";
 const horizontalScale = "scale=1920:1080";
+const verticalScale4k = "scale=2160:3840";
+const horizontalScale4k = "scale=3840:2160";
+const verticalScale8k = "scale=4320:7680";
+const horizontalScale8k = "scale=7680:4320";
 
 async function getDuration(filePath) {
   const metadata = await musicMetadata.parseFile(filePath);
@@ -131,12 +135,8 @@ async function mergeVideoAndAudio(
   selectedScale
 ) {
   console.log("Merging Video and Audio");
-  // console.log(audioPath);
-  // console.log(videoPath);
-
   let duration = await getDuration(audioPath);
-  let slowMotionFilter = `setpts=2*PTS`;
-  const videoDuration = 4; // 2; // Duration of the video loop in seconds
+  const videoDuration = 4; // Duration of the video loop in seconds
   const loops = Math.ceil(duration / videoDuration); // Calculate the number of loops required
   console.log(`Video Duration: ${videoDuration} seconds`); 
   console.log(`Loops: ${loops}`)
@@ -145,7 +145,6 @@ async function mergeVideoAndAudio(
     ffmpeg()
       .input(videoPath)
       .inputOption(`-stream_loop ${loops - 1}`) // Use the calculated number of loops
-      // .inputOption("-stream_loop -1") // Loop the video until it matches the audio duration
       .input(audioPath)
       .outputOptions([
         "-vcodec libx264",
@@ -158,7 +157,7 @@ async function mergeVideoAndAudio(
         "-shortest",
         `-r ${frameRate}`, // Set frame rate
       ])
-      .videoFilters(selectedScale) // , slowMotionFilter) // removed to test now videos are 4 seconds
+      .videoFilters(selectedScale)
       .save(outputPath)
       .on("end", () => {
         console.log("Merging completed: " + outputPath);
@@ -192,7 +191,6 @@ async function concatVideos(videoFiles, finalOutput, isVideoClip) {
           "-shortest",
           `-r ${frameRate}`, // Set frame rate
         ])
-        // .outputOptions(["-af apad=pad_len=88200"])
         .save(finalOutput)
         .on("end", () => {
           console.log("Concatenation completed: " + finalOutput);
@@ -228,7 +226,6 @@ async function addBackgroundEffect(
   backgroundFile,
   finalOutputWithBgSound
 ) {
-  // let duration = getDuration(finalOutput);
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input(finalOutput)
@@ -251,8 +248,9 @@ async function addBackgroundEffect(
         `-r ${frameRate}`, // Set frame rate
       ])
       .complexFilter([
-        "[1:a]volume=0.30[a1]", // Lower the volume of the second input (audio file)
-        "[0:a][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
+        "[0:a]volume=3.00[a0]", // Increase the volume of the first input (narration file)
+        "[1:a]volume=0.15[a1]", // Lower the volume of the second input (background file)
+        "[a0][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
       ])
       .outputOptions(["-map 0:v", "-map [a]"])
       .save(finalOutputWithBgSound)

@@ -6,11 +6,27 @@ const fs = require("fs");
 // Programmatically add a break at the end of the speech
 // https://help.elevenlabs.io/hc/en-us/articles/13416374683665-How-can-I-add-pauses
 const breakTime = '<break time="0.5s" />';
+// Using new ElevenLabs NPM package
+const elevenlabs = require("@elevenlabs/elevenlabs-js");
+const elevenlabsClient = new elevenlabs.ElevenLabsClient({
+  apiKey: configs.ElevenLabs.v2.ApiKey,
+});
 
 async function GenerateAudio(audioPrompt, idx, language, isMale) {
+  // Use ElevenLabs SDK to generate audio
+  await generateAudioSDK(audioPrompt, idx, language, isMale);
+  // Use ElevenLabs API to generate audio
+  // await generateAudioAPI(audioPrompt, idx, language, isMale);
+}
+
+async function generateAudioAPI(audioPrompt, idx, language, isMale) {
   try {
     audioPrompt = audioPrompt + breakTime;
-    if (fs.existsSync(`input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`)) {
+    if (
+      fs.existsSync(
+        `input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`
+      )
+    ) {
       console.log(
         `File Exists: input/audio-${idx
           .toString()
@@ -52,11 +68,73 @@ async function GenerateAudio(audioPrompt, idx, language, isMale) {
       console.log("Audio Asset Generated");
     }
   } catch (ex) {
-    if (ex.response.data) 
+    if (ex.response.data)
       console.log("Error in Eleven Labs: " + ex.response.data);
-    else 
-      console.log("Error in Eleven Labs: " + ex.response);
+    else console.log("Error in Eleven Labs: " + ex.response);
   }
+}
+
+async function generateAudioSDK(audioPrompt, idx, language, isMale) {
+  try {
+    audioPrompt = audioPrompt + breakTime;
+    if (
+      fs.existsSync(
+        `input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`
+      )
+    ) {
+      console.log(
+        `File Exists: input/audio-${idx
+          .toString()
+          .padStart(2, 0)}-${language}.mp3`
+      );
+    } else {
+      // Using ElevenLabs SDK to generate audio
+      const voiceId = isMale
+        ? configs.ElevenLabs.v2.Voices.Male
+        : configs.ElevenLabs.v2.Voices.Female;
+      const audio = await elevenlabsClient.textToSpeech.convert(
+        voiceId,
+        {
+          text: audioPrompt,
+          model: configs.ElevenLabs.v2.Models.Multilingual,
+          outputFormat: configs.ElevenLabs.v2.OutputFormat,
+          voiceSettings: {
+            stability: Number(configs.ElevenLabs.v2.Voices.Settings.Stability),
+            similarityBoost: Number(
+              configs.ElevenLabs.v2.Voices.Settings.Similarity
+            ),
+          },
+        },
+        {
+          maxRetries: 5,
+        }
+      );
+      const audioBuffer = await readableStreamToBuffer(audio);
+      fs.writeFileSync(
+        `input/audio-${idx.toString().padStart(2, 0)}-${language}.mp3`,
+        audioBuffer
+      );
+      console.log("Audio Asset Generated");
+    }
+  } catch (ex) {
+    console.error("Error in Eleven Labs SDK:", ex);
+  }
+}
+
+async function readableStreamToBuffer(readableStream) {
+  const reader = readableStream.getReader();
+  const chunks = [];
+  let done = false;
+
+  while (!done) {
+    const { value, done: streamDone } = await reader.read();
+    if (value) {
+      chunks.push(value);
+    }
+    done = streamDone;
+  }
+
+  return Buffer.concat(chunks);
 }
 
 module.exports = { GenerateAudio };

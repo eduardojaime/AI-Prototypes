@@ -1,6 +1,8 @@
 #Channel Assets
 channel
+workflows
 archived
+input
 output
 *.png
 *.mpeg

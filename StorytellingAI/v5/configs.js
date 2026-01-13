@@ -43,6 +43,14 @@ const configs = {
           Width: 1920,
           Height: 1080,
         },
+        ZIT_NATIVE: {
+          Width: 1024,
+          Height: 768,
+        },
+        WAN: {
+          Width: 1280,
+          Height: 704,
+        }
       },
       Vertical: {
         SDXL: {
@@ -53,11 +61,21 @@ const configs = {
           Width: 1080,
           Height: 1920,
         },
+        ZIT_NATIVE: {
+          Width: 768,
+          Height: 1024,
+        },
+        WAN: {
+          Width: 704,
+          Height: 1280,
+        }
       },
     },
     Workflows: {
-      LLMSDXL: "./input/workflows/sdxl/YT_VIDEO_LLM_SDXL_API.json",
+      LLMSDXL: "",
       LLMFlux: "./input/workflows/flux/YT_VIDEO_LLM_API.json",
+      LLMZIMAGE: "./input/workflows/zimage/YT_LLM_ZIMAGE_API.json",
+      LLMWANVideo: "./input/workflows/wan/YT_LLM_T2VWANTURBO_API.json",
     },
   },
   StabilityAI: {
@@ -141,7 +159,7 @@ const configs = {
       BackgroundFile: "background.mp3",
       Prompts: {
         Additional:
-          "cinematic scene, horror movie, eerie, grim, scary, gloomy, terrifying, dark atmosphere, hues of red and green, intricate detail, 4k, ",
+          "cinematic scene, intricate detail, dramatic lighting, shadows, horror movie style",
         AdditionalStabilityAI:
           "((style of Ridley Scott)), ((grotesque)), nightmarish, hellish landscape, terrifying, dark nocturnal atmosphere, ((eerie, grim, spooky, gloomy, dark red, dark green))",
         Negative:

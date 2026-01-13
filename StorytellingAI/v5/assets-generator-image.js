@@ -49,9 +49,9 @@ async function generateImageWithComfyUI(
     const imgPath = path.join(__dirname, `./input/${imgFileNamePrefix}-01.png`);
     const videoPath = path.join(__dirname, `/input/${videFileNamePrefix}.mp4`);
     const formats = configs.ComfyUI.Formats;
-    const steps = isSDXL
-      ? configs.ComfyUI.Sampler.SDXL.Steps
-      : configs.ComfyUI.Sampler.Flux.Steps;
+    // const steps = isSDXL
+    //   ? configs.ComfyUI.Sampler.SDXL.Steps
+    //   : configs.ComfyUI.Sampler.Flux.Steps;
     // check if exists and return
     const files = fs.readdirSync(path.join(__dirname, "./input"));
     const imgExists = files.some((file) => file.includes(imgFileNamePrefix));
@@ -60,29 +60,33 @@ async function generateImageWithComfyUI(
       console.log(`File Exists: ${imgFileNamePrefix}`);
     } else {
       const positivePrompt = selectedTheme.Prompts.Additional + "," + imgPrompt;
-      const workflowPath = path.join(
-        __dirname,
-        isSDXL
-          ? configs.ComfyUI.Workflows.LLMSDXL
-          : configs.ComfyUI.Workflows.LLMFlux
-      );
+      // const workflowPath = path.join(
+      //   __dirname,
+      //   isSDXL
+      //     ? configs.ComfyUI.Workflows.LLMSDXL
+      //     : configs.ComfyUI.Workflows.LLMFlux
+      // );
+      const workflowPath = path.join(__dirname, configs.ComfyUI.Workflows.LLMZIMAGE);
       console.log(`Loading workflow from: ${workflowPath}`);
       const outputPath = path.join(__dirname, "./input");
       const workflowStringData = fs.readFileSync(workflowPath, "utf8");
       const workflowJson = JSON.parse(workflowStringData);
+      // LLM RANDOM SEED
+      workflowJson["115"]["inputs"]["seed"] = getRandomInt(1, 4294967294); 
+
+      // INTRUCTIONS
+      workflowJson["51"]["inputs"]["text"] = positivePrompt; // Prompt to be enhanced by LLM
+      // WIDTH and HEIGHT
+      workflowJson["57"]["inputs"]["string"] = isShort
+        ? formats.Vertical.FHD.Width
+        : formats.Horizontal.FHD.Width;
+      workflowJson["58"]["inputs"]["string"] = isShort
+        ? formats.Vertical.FHD.Height
+        : formats.Horizontal.FHD.Height;
+      // KSAMPLER Seed and Steps
       workflowJson["3"]["inputs"]["seed"] = getRandomInt(1, 4294967294);
-      workflowJson["3"]["inputs"]["steps"] = steps;
-      if (isSDXL) {
-        workflowJson["6"]["inputs"]["text"] = positivePrompt; // Prompt for CLIPTextEncode
-      } else {
-        workflowJson["51"]["inputs"]["text"] = positivePrompt; // Prompt to be enhanced by LLM
-        workflowJson["57"]["inputs"]["string"] = isShort
-          ? formats.Vertical.FHD.Width
-          : formats.Horizontal.FHD.Width;
-        workflowJson["58"]["inputs"]["string"] = isShort
-          ? formats.Vertical.FHD.Height
-          : formats.Horizontal.FHD.Height;
-      }
+      // workflowJson["3"]["inputs"]["steps"] = steps; // NOT NEEDED FOR ZIT
+      // SAVE IMAGE OUTPUT PATH AND FILE PREFIX
       workflowJson["12"]["inputs"]["output_path"] = outputPath;
       workflowJson["12"]["inputs"]["filename_prefix"] = imgFileNamePrefix;
 
@@ -97,24 +101,11 @@ async function generateImageWithComfyUI(
       };
       console.log(`Posting workflow to ComfyUI endpoint: ${comfyUIEndpoint}`);
       const response = await axios.request(options);
-      /*
-    {
-      prompt_id: '264fcb01-8801-4762-90d2-be9d2a3da68d',
-      number: 33,
-      node_errors: {}
-    }
-    */
       await sleep(3000);
       console.log("Response with prompt_id:", response.data.prompt_id);
       let isProcessing = true;
       while (isProcessing) {
         const statusResponse = await axios.get(`${comfyUIEndpoint}`);
-        /* {
-        "exec_info": {
-            "queue_remaining": 1
-          }
-        }
-      */
         isProcessing = statusResponse.data.exec_info.queue_remaining > 0;
         console.log("Is processing:", isProcessing);
         await sleep(10000);
@@ -125,7 +116,7 @@ async function generateImageWithComfyUI(
       console.log(`Video already exists: ${videFileNamePrefix}`);
     } else if (isVideoClip && !videoExists) {
       console.log("Generating Video Clip...");
-      await generateVideoClip(imgPath, videoPath, isShort, true, imgPrompt);
+      await generateVideoClip(imgPath, videoPath, isShort, false, imgPrompt);
     }
   } catch (error) {
     console.error("Error loading workflow or making POST request:", error);
@@ -199,28 +190,73 @@ async function generateImageWithStabilityAI(
 async function generateVideoClip(
   imgPath,
   videoPath,
-  dimensions,
+  isShort = false,
   useGoogleAPI = true,
-  imgPrompt = "",
-  useComfyUI = false
+  imgPrompt = ""
 ) {
   console.log("Generating Video Clip...");
 
-  if (useGoogleAPI)
-    await generateVideoWithGoogleAPI(imgPath, videoPath, dimensions, imgPrompt);
-  else if (useComfyUI)
-    await generateVideoWithComfyUI(imgPath, videoPath, dimensions, imgPrompt);
-  else await generateVideoWithStabilityAI(imgPath, videoPath);
+  await generateText2VideoWithComfyUI(videoPath, imgPrompt, isShort);
+  // if (useGoogleAPI)
+  //   await generateVideoWithGoogleAPI(imgPath, videoPath, dimensions, imgPrompt);
+  // else 
+  //   await generateVideoWithStabilityAI(imgPath, videoPath);
 }
 
-async function generateVideoWithComfyUI(
-  imgPath,
+async function generateText2VideoWithComfyUI(
   videoPath,
-  dimensions,
-  imgPrompt
+  imgPrompt,
+  isShort
 ) {
-  console.log("ComfyUI video generation is not yet implemented.");
-  // Add ComfyUI-specific logic here.
+  try {
+    const formats = configs.ComfyUI.Formats;
+    const files = fs.readdirSync(path.join(__dirname, "./input"));
+    const workflowPath = path.join(
+      __dirname,
+      configs.ComfyUI.Workflows.LLMWANVideo
+    );
+    console.log(`Loading workflow from: ${workflowPath}`);
+    const outputPath = path.join(__dirname, "./input");
+    const workflowStringData = fs.readFileSync(workflowPath, "utf8");
+    const workflowJson = JSON.parse(workflowStringData);
+
+    // Instructions
+    workflowJson["51"]["inputs"]["text"] = imgPrompt;
+    // WAN KSAMPLER
+    workflowJson["107"]["inputs"]["seed"] = getRandomInt(1, 4294967294);
+    // WAN LATENT Width and Height
+    workflowJson["106"]["inputs"]["width"] = isShort
+      ? formats.Vertical.WAN.Width
+      : formats.Horizontal.WAN.Width;
+    workflowJson["106"]["inputs"]["height"] = isShort
+      ? formats.Vertical.WAN.Height
+      : formats.Horizontal.WAN.Height;
+    // WAN VIDEO OUTPUT
+    workflowJson["95"]["inputs"]["filename_prefix"] = videoPath;
+
+    const comfyUIEndpoint = configs.ComfyUI.Endpoints.Localhost;
+    const options = {
+      method: "POST",
+      url: comfyUIEndpoint,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: { prompt: workflowJson },
+    };
+    console.log(`Posting workflow to ComfyUI endpoint: ${comfyUIEndpoint}`);
+    const response = await axios.request(options);
+    await sleep(3000);
+    console.log("Response with prompt_id:", response.data.prompt_id);
+    let isProcessing = true;
+    while (isProcessing) {
+      const statusResponse = await axios.get(`${comfyUIEndpoint}`);
+      isProcessing = statusResponse.data.exec_info.queue_remaining > 0;
+      console.log("Is processing:", isProcessing);
+      await sleep(1000);
+    }
+  } catch (error) {
+    console.error("Error loading workflow or making POST request:", error);
+  }
 }
 
 async function generateVideoWithStabilityAI(imgPath, videoPath) {

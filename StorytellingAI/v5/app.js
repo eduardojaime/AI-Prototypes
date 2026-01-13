@@ -123,11 +123,11 @@ async function SelectFormat() {
 }
 
 async function SelectComfyUIOption() {
-  isComfyUI =
-    (await GetAnswer("Do you want to use ComfyUI?")) === "Y"
-      ? (console.log("ComfyUI selected"), true)
-      : (console.log("ComfyUI not selected Using StabilityAI endpoints"),
-        false);
+  isComfyUI = true;
+    // (await GetAnswer("Do you want to use ComfyUI?")) === "Y"
+    //   ? (console.log("ComfyUI selected"), true)
+    //   : (console.log("ComfyUI not selected Using StabilityAI endpoints"),
+    //     false);
 }
 
 async function SelectComfyUIModelOption() {
@@ -138,8 +138,8 @@ async function SelectComfyUIModelOption() {
 }
 
 async function SelectVideoClipOption() {
-  isVideoClip =
-    (await GetAnswer("Do you want to generate a animated video?")) === "Y";
+  isVideoClip = false;
+    // (await GetAnswer("Do you want to generate a animated video?")) === "Y";
 }
 
 // PROCESSING AND GENERATION

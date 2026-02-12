@@ -14,9 +14,11 @@ const elevenlabsClient = new elevenlabs.ElevenLabsClient({
 
 async function GenerateAudio(audioPrompt, idx, language, isMale) {
   // Use ElevenLabs SDK to generate audio
-  await generateAudioSDK(audioPrompt, idx, language, isMale);
+  // await generateAudioSDK(audioPrompt, idx, language, isMale);
   // Use ElevenLabs API to generate audio
   // await generateAudioAPI(audioPrompt, idx, language, isMale);
+  // Use ComfyUI to generate audio
+  await generateAudioWithComfyUI(audioPrompt, idx, language);
 }
 
 async function generateAudioAPI(audioPrompt, idx, language, isMale) {
@@ -121,6 +123,82 @@ async function generateAudioSDK(audioPrompt, idx, language, isMale) {
   }
 }
 
+async function generateAudioWithComfyUI(audioPrompt, idx, language) {
+  try {
+    const path = require("path");
+    const audioFileNamePrefix = `audio-${idx.toString().padStart(2, 0)}-${language}`;
+    const audioPath = path.join(__dirname, `./input/${audioFileNamePrefix}.mp3`);
+    const serverOutputPath = `AUDIOTEMP/${audioFileNamePrefix}`;
+
+    // Check if audio file already exists
+    if (fs.existsSync(audioPath)) {
+      console.log(`File Exists: ${audioFileNamePrefix}.mp3`);
+      return;
+    }
+
+    // Load the workflow JSON
+    const workflowPath = path.join(
+      __dirname,
+      "./input/workflows/qwen3tts/YT_AUDIO_API.json"
+    );
+    console.log(`Loading workflow from: ${workflowPath}`);
+
+    const workflowStringData = fs.readFileSync(workflowPath, "utf8");
+    const workflowJson = JSON.parse(workflowStringData);
+
+    console.log(`Saving to output path: ${serverOutputPath}`);
+
+    // Set the filename prefix for audio output (node 13 - SaveAudioMP3)
+    workflowJson["13"]["inputs"]["filename_prefix"] = `${serverOutputPath}`;
+
+    // Set the text/script to be converted to speech (node 14 - PrimitiveStringMultiline)
+    workflowJson["14"]["inputs"]["value"] = audioPrompt;
+
+    // // Randomize seed for TTS generation (node 10 - Qwen3TTSVoiceClone)
+    // workflowJson["10"]["inputs"]["seed"] = getRandomInt(1, 4294967294);
+
+    // Post workflow to ComfyUI
+    const comfyUIEndpoint = configs.ComfyUI.Endpoints.Localhost;
+    const options = {
+      method: "POST",
+      url: comfyUIEndpoint,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: { prompt: workflowJson },
+    };
+
+    console.log(`Posting workflow to ComfyUI endpoint: ${comfyUIEndpoint}`);
+    const response = await axios.request(options);
+    await sleep(3000);
+    console.log("Response with prompt_id:", response.data.prompt_id);
+
+    // Wait for processing to complete
+    let isProcessing = true;
+    while (isProcessing) {
+      const statusResponse = await axios.get(`${comfyUIEndpoint}`);
+      isProcessing = statusResponse.data.exec_info.queue_remaining > 0;
+      console.log("Is processing:", isProcessing);
+      await sleep(10000);
+    }
+
+    // Copy from serverOutputPath to local input folder
+    const comfyUIOutputFolder = "D:\\Programacion\\StableDiffusion\\Outputs\\comfyui\\"
+    await fs.copyFileSync(
+      path.join(comfyUIOutputFolder, `${serverOutputPath}_00001_.mp3`),
+      audioPath
+    );
+    // delete from ComfyUI output folder
+    await fs.unlinkSync(
+      path.join(comfyUIOutputFolder, `${serverOutputPath}_00001_.mp3`)
+    );
+    
+    console.log("Audio Asset Generated with ComfyUI");
+  } catch (error) {
+    console.error("Error loading workflow or making POST request:", error);
+  }
+}
+
 async function readableStreamToBuffer(readableStream) {
   const reader = readableStream.getReader();
   const chunks = [];
@@ -135,6 +213,14 @@ async function readableStreamToBuffer(readableStream) {
   }
 
   return Buffer.concat(chunks);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 module.exports = { GenerateAudio };

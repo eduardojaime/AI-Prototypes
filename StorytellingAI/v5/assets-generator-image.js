@@ -108,10 +108,10 @@ async function generateImageWithComfyUI(
         const statusResponse = await axios.get(`${comfyUIEndpoint}`);
         isProcessing = statusResponse.data.exec_info.queue_remaining > 0;
         console.log("Is processing:", isProcessing);
-        await sleep(10000);
+        await sleep(2000);
       }
     }
-    await sleep(3000);
+    await sleep(2000);
     if (videoExists) {
       console.log(`Video already exists: ${videFileNamePrefix}`);
     } else if (isVideoClip && !videoExists) {

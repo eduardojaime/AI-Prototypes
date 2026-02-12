@@ -76,6 +76,7 @@ const configs = {
       LLMFlux: "./input/workflows/flux/YT_VIDEO_LLM_API.json",
       LLMZIMAGE: "./input/workflows/zimage/YT_LLM_ZIMAGE_API.json",
       LLMWANVideo: "./input/workflows/wan/YT_LLM_T2VWANTURBO_API.json",
+      QWEN3TTS: "./input/workflows/qwen3tts/YT_AUDIO_API.json",
     },
   },
   StabilityAI: {

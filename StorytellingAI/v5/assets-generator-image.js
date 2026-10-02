@@ -72,10 +72,10 @@ async function generateImageWithComfyUI(
       const workflowStringData = fs.readFileSync(workflowPath, "utf8");
       const workflowJson = JSON.parse(workflowStringData);
       // LLM RANDOM SEED
-      workflowJson["115"]["inputs"]["seed"] = getRandomInt(1, 4294967294); 
+      // workflowJson["115"]["inputs"]["seed"] = getRandomInt(1, 4294967294); 
 
       // INTRUCTIONS
-      workflowJson["51"]["inputs"]["text"] = positivePrompt; // Prompt to be enhanced by LLM
+      workflowJson["538:536"]["inputs"]["value"] = positivePrompt; // Prompt to be enhanced by LLM
       // WIDTH and HEIGHT
       workflowJson["57"]["inputs"]["string"] = isShort
         ? formats.Vertical.FHD.Width

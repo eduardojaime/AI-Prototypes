@@ -240,6 +240,7 @@ async function GenerateLongVideo(scriptArr) {
   );
   console.log(`Generating Video Output ${language}`);
   await GenerateVideoOutput(language, isVideoClip);
+  await CleanUp();
 }
 
 async function GenerateVideoOutput(language, isVideoClip) {
@@ -383,7 +384,6 @@ async function Main() {
   } else {
     await GenerateLongVideo(scriptArr);
   }
-  await CleanUp();
 }
 
 Main().catch((err) => {

@@ -4,7 +4,6 @@ const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
-const googleAi = require("@google/genai");
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -197,10 +196,6 @@ async function generateVideoClip(
   console.log("Generating Video Clip...");
 
   await generateText2VideoWithComfyUI(videoPath, imgPrompt, isShort);
-  // if (useGoogleAPI)
-  //   await generateVideoWithGoogleAPI(imgPath, videoPath, dimensions, imgPrompt);
-  // else 
-  //   await generateVideoWithStabilityAI(imgPath, videoPath);
 }
 
 async function generateText2VideoWithComfyUI(
@@ -297,51 +292,6 @@ async function generateVideoWithStabilityAI(imgPath, videoPath) {
   const binaryData = Buffer.from(base64String, "base64");
   fs.writeFileSync(videoPath, binaryData);
   console.log("Video Asset Generated with StabilityAI");
-}
-
-async function generateVideoWithGoogleAPI(
-  imgPath,
-  videoPath,
-  dimensions,
-  imgPrompt
-) {
-  console.log("Google API video generation is not yet implemented.");
-
-  const isShort = dimensions.selectedHeight > dimensions.selectedWidth;
-
-  const ai = new googleAi.GoogleGenAI({
-    apiKey: configs.Google.VertexAI.ApiKey,
-  });
-  const filePath = path.resolve(__dirname, imgPath);
-  const fileStream = fs.createReadStream(filePath);
-
-  let operation = await ai.models.generateVideos({
-    model: "veo-2.0-generate-001",
-    prompt: imgPrompt,
-    image: {
-      imageBytes: fileStream.imageBytes,
-      mimeType: "image/png",
-    },
-    config: {
-      aspectRatio: isShort ? "9:16" : "16:9",
-      numberOfVideos: 1,
-    },
-  });
-
-  while (!operation.done) {
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-    operation = await ai.operations.getVideosOperation({
-      operation: operation,
-    });
-  }
-
-  operation.response?.generatedVideos?.forEach(async (generatedVideo, n) => {
-    const resp = await fetch(
-      `${generatedVideo.video?.uri}&key=${configs.Google.VertexAI.ApiKey}` // append your API key
-    );
-    const writer = createWriteStream(videoPath);
-    Readable.fromWeb(resp.body).pipe(writer);
-  });
 }
 
 async function GenerateImage(

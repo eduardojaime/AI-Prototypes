@@ -59,7 +59,6 @@ classDiagram
 		-generateVideoClip(...)
 		-generateText2VideoWithComfyUI(...)
 		-generateVideoWithStabilityAI(...)
-		-generateVideoWithGoogleAPI(...)
 		-getDimensions(isShort)
 		-getRandomInt(min, max)
 		-sleep(ms)
@@ -96,7 +95,6 @@ classDiagram
 		+StabilityAI
 		+ElevenLabs
 		+OpenAI
-		+Google
 	}
 	app_js --> image_generator : calls GenerateImage
 	app_js --> audio_generator : calls GenerateAudio

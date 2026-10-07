@@ -183,15 +183,31 @@ async function generateAudioWithComfyUI(audioPrompt, idx, language) {
     }
 
     // Copy from serverOutputPath to local input folder
-    const comfyUIOutputFolder = "D:\\Programacion\\StableDiffusion\\Outputs\\comfyui\\"
-    await fs.copyFileSync(
-      path.join(comfyUIOutputFolder, `${serverOutputPath}_00001_.mp3`),
-      audioPath
-    );
-    // delete from ComfyUI output folder
-    await fs.unlinkSync(
-      path.join(comfyUIOutputFolder, `${serverOutputPath}_00001_.mp3`)
-    );
+    const comfyUIOutputFolder = "D:\\Programacion\\StableDiffusion\\Outputs\\comfyui";
+    const comfyUIAudioFolder = path.join(comfyUIOutputFolder, "AUDIOTEMP");
+    const generatedAudioFiles = fs
+      .readdirSync(comfyUIAudioFolder)
+      .filter(
+        (file) =>
+          file.startsWith(`${audioFileNamePrefix}_`) &&
+          file.toLowerCase().endsWith(".mp3")
+      )
+      .map((file) => ({
+        name: file,
+        path: path.join(comfyUIAudioFolder, file),
+        modifiedAt: fs.statSync(path.join(comfyUIAudioFolder, file)).mtimeMs,
+      }))
+      .sort((a, b) => b.modifiedAt - a.modifiedAt);
+
+    if (generatedAudioFiles.length === 0) {
+      throw new Error(
+        `ComfyUI did not produce an MP3 for prefix ${audioFileNamePrefix} in ${comfyUIAudioFolder}`
+      );
+    }
+
+    const generatedAudioFile = generatedAudioFiles[0];
+    fs.copyFileSync(generatedAudioFile.path, audioPath);
+    fs.unlinkSync(generatedAudioFile.path);
     
     console.log("Audio Asset Generated with ComfyUI");
   } catch (error) {

@@ -29,8 +29,6 @@ let frameFiles = [];
 let isShort = false;
 let isMale = false;
 let isVideoClip = false;
-let isComfyUI = false;
-let isSDXL = false;
 let language = "EN";
 let audioIdx = 0;
 let selectedTheme = {};
@@ -122,21 +120,6 @@ async function SelectFormat() {
         false);
 }
 
-async function SelectComfyUIOption() {
-  isComfyUI = true;
-    // (await GetAnswer("Do you want to use ComfyUI?")) === "Y"
-    //   ? (console.log("ComfyUI selected"), true)
-    //   : (console.log("ComfyUI not selected Using StabilityAI endpoints"),
-    //     false);
-}
-
-async function SelectComfyUIModelOption() {
-  isSDXL =
-    (await GetAnswer("Do you want to use SDXL?")) === "Y"
-      ? (console.log("SDXL selected"), true)
-      : (console.log("Flux"), false);
-}
-
 async function SelectVideoClipOption() {
   isVideoClip = false;
     // (await GetAnswer("Do you want to generate a animated video?")) === "Y";
@@ -167,9 +150,7 @@ async function ProcessScript(
           idx,
           isShort,
           isVideoClip,
-          selectedTheme,
-          isSDXL,
-          isComfyUI
+          selectedTheme
         );
       }
 
@@ -374,7 +355,6 @@ async function Main() {
   await SelectTheme(); // Horror or Motivational
   await SelectFormat(); // SHORT or LONG FORM
   await SelectVideoClipOption(); // Generate Video or Static Image Video
-  await SelectComfyUIOption();
 
   let script = await asset_generator_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
   let scriptArr = script.split(/\r\n|\r|\n/);

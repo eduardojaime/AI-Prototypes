@@ -1,4 +1,3 @@
-// video generation snippet
 const fs = require("fs");
 const path = require("path");
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
@@ -61,7 +60,6 @@ async function ProcessFiles(
           selectedScale
         );
       } else {
-        // legacy
         await mergeAudioAndImages(
           audioPath,
           framePath,

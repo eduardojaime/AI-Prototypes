@@ -1,0 +1,6 @@
+# Ignore files specific to this folder
+CLAUDE.md
+AGENTS.md
+.claude/
+.githubinstructions/
+prompts/

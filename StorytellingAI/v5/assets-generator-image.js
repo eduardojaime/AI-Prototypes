@@ -48,9 +48,8 @@ async function generateImageWithComfyUI(
       workflowJson["58"]["inputs"]["string"] = isShort
         ? formats.Vertical.FHD.Height
         : formats.Horizontal.FHD.Height;
-      // KSAMPLER Seed and Steps
+      // KSAMPLER Seed
       workflowJson["3"]["inputs"]["seed"] = getRandomInt(1, 4294967294);
-      // workflowJson["3"]["inputs"]["steps"] = steps; // NOT NEEDED FOR ZIT
       // SAVE IMAGE OUTPUT PATH AND FILE PREFIX
       workflowJson["12"]["inputs"]["output_path"] = outputPath;
       workflowJson["12"]["inputs"]["filename_prefix"] = imgFileNamePrefix;

@@ -14,20 +14,8 @@ const configs = {
     Endpoints: {
       Localhost: "http://127.0.0.1:8188/prompt",
     },
-    Sampler: {
-      Flux: {
-        Steps: 5,
-      },
-      SDXL: {
-        Steps: 30,
-      },
-    },
     Formats: {
       Horizontal: {
-        SDXL: {
-          Width: 1344,
-          Height: 768,
-        },
         FHD: {
           Width: 1920,
           Height: 1080,
@@ -42,10 +30,6 @@ const configs = {
         }
       },
       Vertical: {
-        SDXL: {
-          Width: 768,
-          Height: 1344,
-        },
         FHD: {
           Width: 1080,
           Height: 1920,

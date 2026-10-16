@@ -68,7 +68,7 @@ async function generateAudioWithComfyUI(audioPrompt, idx, language) {
     }
 
     // Copy from serverOutputPath to local input folder
-    const comfyUIOutputFolder = "D:\\Programacion\\StableDiffusion\\Outputs\\comfyui";
+    const comfyUIOutputFolder = configs.ComfyUI.OutputDirectory;
     const comfyUIAudioFolder = path.join(comfyUIOutputFolder, "AUDIOTEMP");
     const generatedAudioFiles = fs
       .readdirSync(comfyUIAudioFolder)

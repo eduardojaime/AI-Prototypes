@@ -4,6 +4,26 @@ StorytellingAI is a Node.js command-line application for turning a prepared, tab
 
 The script is read from `input/response-multi.mdtext`. Each content row supplies an image prompt and narration text. Generated assets are stored in `input/`, and rendered videos are organized under `output/<year>/<week>/`.
 
+## FFmpeg setup
+
+The video generator uses `fluent-ffmpeg` with locally provisioned FFmpeg and FFprobe 9.x executables. They are not installed by npm. Download a Windows FFmpeg 9.x build from the [official FFmpeg download page](https://ffmpeg.org/download.html) (which links to Windows builds), then place `ffmpeg.exe` and the matching `ffprobe.exe` in the project-root `ffmpeg/bin/` directory:
+
+```text
+ffmpeg/
+└── bin/
+	├── ffmpeg.exe
+	└── ffprobe.exe
+```
+
+Check the installed versions from the project root:
+
+```powershell
+.\ffmpeg\bin\ffmpeg.exe -version
+.\ffmpeg\bin\ffprobe.exe -version
+```
+
+The `ffmpeg/` directory is intentionally Git-ignored, so it is not included in clones or deployments. Download and place the binaries separately in each environment. Use the matching FFmpeg and FFprobe files from the same build; `npm install` installs the JavaScript wrapper and other Node.js dependencies only.
+
 ## Architecture
 
 ```mermaid

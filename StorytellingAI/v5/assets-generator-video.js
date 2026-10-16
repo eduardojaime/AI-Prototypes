@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
-const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
-const ffprobePath = require("@ffprobe-installer/ffprobe").path;
+// Uses downloaded copy of latest binaries in ffmpeg/bin folder
+const ffmpegPath = path.join(__dirname, "ffmpeg", "bin", "ffmpeg.exe");
+const ffprobePath = path.join(__dirname, "ffmpeg", "bin", "ffprobe.exe");
 const ffmpeg = require("fluent-ffmpeg");
 const musicMetadata = require("music-metadata");
 const frameRate = 30; // Frame rate for smoother video
@@ -179,13 +180,18 @@ async function mergeVideoAndAudio(
 async function concatVideos(videoFiles, finalOutput, isVideo) {
   return new Promise((resolve, reject) => {
     const concatListPath = path.join(__dirname, "concat-list.txt");
-    const concatList = videoFiles.map((file) => `file '${file}'`).join("\n");
+    const concatList = [
+      "ffconcat version 1.0",
+      ...videoFiles.map(
+        (file) => `file '${file.replace(/\\/g, "/").replace(/'/g, "\\'")}'`
+      ),
+    ].join("\n");
     fs.writeFileSync(concatListPath, concatList);
 
     if (isVideo) {
       ffmpeg()
         .input(concatListPath)
-        .inputOptions(["-f concat", "-safe 0"])
+        .inputOptions(["-safe 0"])
         .outputOptions([
           "-map 0:v:0",
           "-map 0:a:0",
@@ -212,7 +218,7 @@ async function concatVideos(videoFiles, finalOutput, isVideo) {
     } else {
       ffmpeg()
         .input(concatListPath)
-        .inputOptions(["-f concat", "-safe 0"])
+        .inputOptions(["-safe 0"])
         // Append 2 seconds of silence to the output audio stream
         .outputOptions(["-af apad=pad_len=88200"])
         .save(finalOutput)
@@ -254,11 +260,12 @@ async function addBackgroundEffect(
         `-ar ${audioSampleRate}`, // Set audio sample rate
         "-pix_fmt yuv420p",
         `-r ${frameRate}`, // Set frame rate
+        "-shortest",
       ])
       .complexFilter([
         "[0:a]asetpts=PTS-STARTPTS,volume=3.00[a0]", // Normalize/increase narration audio
         "[1:a]asetpts=PTS-STARTPTS,volume=0.15[a1]", // Normalize/lower background music
-        "[a0][a1]amix=inputs=2:duration=longest:dropout_transition=2,apad[a]",
+        "[a0][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
       ])
       .outputOptions(["-map 0:v", "-map [a]"])
       .save(finalOutputWithBgSound)

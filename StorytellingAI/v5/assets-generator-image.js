@@ -45,7 +45,7 @@ async function submitWorkflow(workflowJson) {
   throw new Error(`Timed out waiting for ComfyUI prompt ${promptId}.`);
 }
 
-async function downloadVideoOutput(outputs, videoNodeId, videoPath) {
+function moveVideoOutput(outputs, videoNodeId, videoPath) {
   const nodeOutput = outputs[videoNodeId];
   const outputFiles = [
     ...(nodeOutput?.videos || []),
@@ -63,17 +63,40 @@ async function downloadVideoOutput(outputs, videoNodeId, videoPath) {
     );
   }
 
-  const viewUrl = `${getComfyUIBaseUrl()}/view`;
-  const response = await axios.get(viewUrl, {
-    params: {
-      filename: videoFile.filename,
-      subfolder: videoFile.subfolder || "",
-      type: videoFile.type || "output",
-    },
-    responseType: "arraybuffer",
-    timeout: 120000,
-  });
-  fs.writeFileSync(videoPath, response.data);
+  if (videoFile.type && videoFile.type !== "output") {
+    throw new Error(
+      `Expected ComfyUI video output type "output", received "${videoFile.type}".`
+    );
+  }
+
+  const outputRoot = path.resolve(configs.ComfyUI.OutputDirectory);
+  const sourcePath = path.resolve(
+    outputRoot,
+    videoFile.subfolder || "",
+    videoFile.filename
+  );
+  const relativeSourcePath = path.relative(outputRoot, sourcePath);
+  if (
+    relativeSourcePath === ".." ||
+    relativeSourcePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativeSourcePath)
+  ) {
+    throw new Error("ComfyUI video output path resolved outside its output directory.");
+  }
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`ComfyUI video output does not exist: ${sourcePath}`);
+  }
+  if (fs.existsSync(videoPath)) {
+    throw new Error(`Refusing to overwrite existing video: ${videoPath}`);
+  }
+
+  try {
+    fs.renameSync(sourcePath, videoPath);
+  } catch (error) {
+    if (error.code !== "EXDEV") throw error;
+    fs.copyFileSync(sourcePath, videoPath, fs.constants.COPYFILE_EXCL);
+    fs.unlinkSync(sourcePath);
+  }
 }
 
 async function generateVideoWorkflow(imgPrompt, idx, isShort, selectedTheme) {
@@ -119,7 +142,7 @@ async function generateVideoWorkflow(imgPrompt, idx, isShort, selectedTheme) {
     throw new Error(`ComfyUI did not save an image with prefix ${imagePrefix}.`);
   }
 
-  await downloadVideoOutput(outputs, "1430", videoPath);
+  moveVideoOutput(outputs, "1430", videoPath);
   return { imagePath: generatedImages[0], videoPath };
 }
 

@@ -11,6 +11,9 @@ const configs = {
     ShortIncrement: 4,
   },
   ComfyUI: {
+    OutputDirectory:
+      process.env.COMFYUI_OUTPUT_DIRECTORY ||
+      "D:\\Programacion\\StableDiffusion\\Outputs\\comfyui",
     OutputFolders: {
       VideoTemp: "VIDEOTEMP",
     },
@@ -49,7 +52,7 @@ const configs = {
     },
     Workflows: {
       LLMZIMAGE: "./input/workflows/zimage/YT_LLM_ZIMAGE_API.json",
-      ZIMAGEVIDEO: "./input/workflows/zimage/YT_API_ZIMAGE_W_VIDEO.json",
+      ZIMAGEVIDEO: "./input/workflows/zimage/YT_API_ZIMAGE_W_MINIMAX.json",
       QWEN3TTS: "./input/workflows/qwen3tts/YT_AUDIO_API.json",
     },
   },

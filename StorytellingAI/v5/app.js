@@ -13,7 +13,6 @@ const assetsFolder = "./input/assets";
 const inputFolder = "./input";
 const audioFileExtName = ".mp3";
 const imageFileExtName = ".png";
-const videoFileExtName = ".mp4";
 const subtitlesFileName = "subtitles.srt";
 const subtitlesFilePath = path.join(inputFolder, subtitlesFileName);
 const backgroundAudioFileName = "background.mp3";
@@ -28,7 +27,7 @@ let audioFiles = [];
 let frameFiles = [];
 let isShort = false;
 let isMale = false;
-let isVideoClip = false;
+let isVideo = false;
 let language = "EN";
 let audioIdx = 0;
 let selectedTheme = {};
@@ -120,9 +119,12 @@ async function SelectFormat() {
         false);
 }
 
-async function SelectVideoClipOption() {
-  isVideoClip = false;
-    // (await GetAnswer("Do you want to generate a animated video?")) === "Y";
+async function SelectVideoOption() {
+  isVideo =
+    (await GetAnswer("Generate animated video clips? (Y/N)")) === "Y";
+  console.log(
+    isVideo ? "Animated video mode selected." : "Static image mode selected."
+  );
 }
 
 // PROCESSING AND GENERATION
@@ -133,25 +135,28 @@ async function ProcessScript(
   language,
   audioIdx,
   isMale,
-  isVideoClip
+  isVideo
 ) {
   let idx = 1;
+  const processedAssets = [];
   for (const val of scriptArr) {
     if (val.includes("---") || val.includes("IMAGE-PROMPT-PARAGRAPH")) {
       // console.log("skipping");
     } else {
       let row = val.split("|");
+      const asset = { idx };
 
       if (!skipImg) {
         let imgPrompt = row[2];
         console.log("Generating Img Asset " + idx);
-        await asset_generator_img.GenerateImage(
+        const generatedImage = await asset_generator_img.GenerateImage(
           imgPrompt,
           idx,
           isShort,
-          isVideoClip,
+          isVideo,
           selectedTheme
         );
+        if (generatedImage) Object.assign(asset, generatedImage);
       }
 
       if (!skipAudio) {
@@ -163,6 +168,10 @@ async function ProcessScript(
           language,
           isMale
         );
+        asset.audioPath = path.join(
+          inputFolder,
+          `audio-${idx.toString().padStart(2, "0")}-${language}.mp3`
+        );
 
         // log to external file subtitles.srt
         fs.appendFileSync(subtitlesFilePath, audioPrompt, (err) => {
@@ -171,9 +180,11 @@ async function ProcessScript(
         });
       }
 
+      processedAssets.push(asset);
       idx++;
     }
   }
+  return processedAssets;
 }
 
 async function GenerateShortVideos(scriptArr) {
@@ -188,19 +199,19 @@ async function GenerateShortVideos(scriptArr) {
       fs.appendFileSync(inputScriptPath, sliceArr.join("\n"));
     }
     console.log(`Generating Image and Audio Files ${language}`);
-    await ProcessScript(
+    const batchAssets = await ProcessScript(
       sliceArr,
       false,
       false,
       language,
       audioIdx,
       isMale,
-      isVideoClip
+      isVideo
     );
     console.log(`Generating Video Output ${language}`);
     audioFiles = [];
     frameFiles = [];
-    await GenerateVideoOutput(language, isVideoClip);
+    await GenerateVideoOutput(language, isVideo, batchAssets);
     await CleanUp();
     await RestoreFiles(selectedTheme.AssetsFolderShorts, inputFolder);
   }
@@ -208,23 +219,36 @@ async function GenerateShortVideos(scriptArr) {
 
 async function GenerateLongVideo(scriptArr) {
   console.log("Generating Image Files");
-  await ProcessScript(scriptArr, false, true, "", -1, false, isVideoClip);
+  const imageAssets = await ProcessScript(
+    scriptArr,
+    false,
+    true,
+    "",
+    -1,
+    false,
+    isVideo
+  );
   console.log(`Generating Audio Files ${language}`);
-  await ProcessScript(
+  const audioAssets = await ProcessScript(
     scriptArr,
     true,
     false,
     language,
     audioIdx,
     isMale,
-    isVideoClip
+    isVideo
   );
+  const audioByIndex = new Map(audioAssets.map((asset) => [asset.idx, asset]));
+  const completeAssets = imageAssets.map((asset) => ({
+    ...asset,
+    audioPath: audioByIndex.get(asset.idx)?.audioPath,
+  }));
   console.log(`Generating Video Output ${language}`);
-  await GenerateVideoOutput(language, isVideoClip);
+  await GenerateVideoOutput(language, isVideo, completeAssets);
   await CleanUp();
 }
 
-async function GenerateVideoOutput(language, isVideoClip) {
+async function GenerateVideoOutput(language, isVideo, assets = []) {
   if (isShort) outputTimeStamp = Math.floor(Date.now() / 1000);
   finalOutput = path.join(
     outputFolder,
@@ -236,7 +260,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
   );
 
   console.log("Asset generation complete, generating Video now");
-  files = fs.readdirSync(inputFolder);
+  const files = fs.readdirSync(inputFolder);
 
   // Frames
   const pngFiles = files.filter(
@@ -245,15 +269,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
   const pngFilePaths = pngFiles.map((file) => path.join(inputFolder, file));
   frameFiles = pngFilePaths;
 
-  console.log("Is VideoClip: " + isVideoClip);
-  if (isVideoClip) {
-    const mp4Files = files.filter(
-      (file) => path.extname(file).toLowerCase() === videoFileExtName
-    );
-    console.log(mp4Files);
-    const mp4FilePaths = mp4Files.map((file) => path.join(inputFolder, file));
-    frameFiles = mp4FilePaths;
-  }
+  console.log("Is Video: " + isVideo);
 
   // Audio
   const mpegFiles = files.filter(
@@ -265,6 +281,24 @@ async function GenerateVideoOutput(language, isVideoClip) {
   console.log(mpegFiles);
   const mpegFilePaths = mpegFiles.map((file) => path.join(inputFolder, file));
   audioFiles = mpegFilePaths;
+  if (isVideo) {
+    const missing = assets.filter(
+      (asset) =>
+        !asset.videoPath ||
+        !asset.audioPath ||
+        !fs.existsSync(asset.videoPath) ||
+        !fs.existsSync(asset.audioPath)
+    );
+    if (missing.length > 0) {
+      throw new Error(
+        `Video assembly is missing a clip or narration file for script item(s): ${missing
+          .map((asset) => asset.idx)
+          .join(", ")}`
+      );
+    }
+    frameFiles = assets.map((asset) => asset.videoPath);
+    audioFiles = assets.map((asset) => asset.audioPath);
+  }
   console.log("Is Short: " + isShort);
 
   if (frameFiles.length == audioFiles.length && frameFiles.length > 0) {
@@ -276,7 +310,7 @@ async function GenerateVideoOutput(language, isVideoClip) {
       finalOutput,
       finalOutputWithBgSound,
       isShort,
-      isVideoClip
+      isVideo
     );
   } else {
     console.log(
@@ -302,8 +336,6 @@ async function Setup() {
   fs.mkdirSync(inputFolder, { recursive: true });
   prompt.start();
   audioFiles = [];
-  imageFiles = [];
-  videoFiles = [];
 }
 
 async function CleanUp() {
@@ -354,7 +386,7 @@ async function Main() {
   await SelectNarrationType(); // Male or Female Voice
   await SelectTheme(); // Horror or Motivational
   await SelectFormat(); // SHORT or LONG FORM
-  await SelectVideoClipOption(); // Generate Video or Static Image Video
+  await SelectVideoOption(); // Animated video clips or static images
 
   let script = await asset_generator_script.ReadScriptFile(inputScriptPath); // DEPRECATED >> generate_script(generateScript, language);
   let scriptArr = script.split(/\r\n|\r|\n/);
@@ -368,4 +400,5 @@ async function Main() {
 
 Main().catch((err) => {
   console.error(err);
+  process.exitCode = 1;
 });

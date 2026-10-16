@@ -24,6 +24,10 @@ async function getDuration(filePath) {
   return metadata.format.duration;
 }
 
+function resolveAssetPath(filePath) {
+  return path.isAbsolute(filePath) ? filePath : path.resolve(__dirname, filePath);
+}
+
 async function ProcessFiles(
   audioFiles,
   frameFiles,
@@ -31,12 +35,12 @@ async function ProcessFiles(
   finalOutput,
   finalOutputWithBgSound,
   isShort,
-  isVideoClip
+  isVideo
 ) {
   let backgroundSound = path.join(__dirname, "input/background.mp3");
   console.log("Starting Processing");
   if (audioFiles.length !== frameFiles.length) {
-    console.error("The number of audio files and image files should be equal");
+    console.error("The number of audio files and visual assets should be equal");
     return;
   }
 
@@ -45,14 +49,14 @@ async function ProcessFiles(
   const videoFiles = [];
 
   for (let i = 0; i < audioFiles.length; i++) {
-    const audioPath = path.join(__dirname, audioFiles[i]);
+    const audioPath = resolveAssetPath(audioFiles[i]);
     console.log("Processing " + audioPath);
-    const framePath = path.join(__dirname, frameFiles[i]);
+    const framePath = resolveAssetPath(frameFiles[i]);
     console.log("Processing " + framePath);
     const outputPath = path.join(inputFolder, `output_${i + 1}.mp4`);
 
     try {
-      if (isVideoClip) {
+      if (isVideo) {
         await mergeVideoAndAudio(
           audioPath,
           framePath,
@@ -76,7 +80,7 @@ async function ProcessFiles(
   }
 
   try {
-    await concatVideos(videoFiles, finalOutput, isVideoClip);
+    await concatVideos(videoFiles, finalOutput, isVideo);
     await addBackgroundEffect(
       finalOutput,
       backgroundSound,
@@ -85,6 +89,7 @@ async function ProcessFiles(
     videoFiles.forEach((file) => fs.unlinkSync(file));
   } catch (error) {
     console.error("Error concatenating videos:", error.message);
+    throw error;
   }
 }
 
@@ -134,26 +139,29 @@ async function mergeVideoAndAudio(
 ) {
   console.log("Merging Video and Audio");
   let duration = await getDuration(audioPath);
-  const videoDuration = 4; // Duration of the video loop in seconds
-  const loops = Math.ceil(duration / videoDuration); // Calculate the number of loops required
-  console.log(`Video Duration: ${videoDuration} seconds`); 
-  console.log(`Loops: ${loops}`)
+  if (!Number.isFinite(duration) || duration <= 0) {
+    throw new Error(`Could not determine a valid narration duration for ${audioPath}`);
+  }
 
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input(videoPath)
-      .inputOption(`-stream_loop ${loops - 1}`) // Use the calculated number of loops
+      .inputOptions(["-stream_loop -1"])
       .input(audioPath)
       .outputOptions([
-        "-vcodec libx264",
+        "-map 0:v:0",
+        "-map 1:a:0",
+        "-c:v libx264",
         `-b:v ${videoBitRate}`, // Set video bitrate
-        "-acodec aac",
+        "-c:a aac",
         `-b:a ${audioBitRate}`, // Set audio bitrate
         "-bufsize 8000k",
         `-ar ${audioSampleRate}`, // Set audio sample rate
         "-pix_fmt yuv420p",
         "-shortest",
+        `-t ${duration.toFixed(3)}`,
         `-r ${frameRate}`, // Set frame rate
+        "-shortest",
       ])
       .videoFilters(selectedScale)
       .save(outputPath)
@@ -168,17 +176,19 @@ async function mergeVideoAndAudio(
   });
 }
 
-async function concatVideos(videoFiles, finalOutput, isVideoClip) {
+async function concatVideos(videoFiles, finalOutput, isVideo) {
   return new Promise((resolve, reject) => {
     const concatListPath = path.join(__dirname, "concat-list.txt");
     const concatList = videoFiles.map((file) => `file '${file}'`).join("\n");
     fs.writeFileSync(concatListPath, concatList);
 
-    if (isVideoClip) {
+    if (isVideo) {
       ffmpeg()
         .input(concatListPath)
         .inputOptions(["-f concat", "-safe 0"])
         .outputOptions([
+          "-map 0:v:0",
+          "-map 0:a:0",
           "-vcodec libx264",
           `-b:v ${videoBitRate}`, // Set video bitrate
           "-acodec aac",
@@ -246,9 +256,9 @@ async function addBackgroundEffect(
         `-r ${frameRate}`, // Set frame rate
       ])
       .complexFilter([
-        "[0:a]volume=3.00[a0]", // Increase the volume of the first input (narration file)
-        "[1:a]volume=0.15[a1]", // Lower the volume of the second input (background file)
-        "[a0][a1]amix=inputs=2:duration=first:dropout_transition=2[a]",
+        "[0:a]asetpts=PTS-STARTPTS,volume=3.00[a0]", // Normalize/increase narration audio
+        "[1:a]asetpts=PTS-STARTPTS,volume=0.15[a1]", // Normalize/lower background music
+        "[a0][a1]amix=inputs=2:duration=longest:dropout_transition=2,apad[a]",
       ])
       .outputOptions(["-map 0:v", "-map [a]"])
       .save(finalOutputWithBgSound)

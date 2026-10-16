@@ -11,6 +11,9 @@ const configs = {
     ShortIncrement: 4,
   },
   ComfyUI: {
+    OutputFolders: {
+      VideoTemp: "VIDEOTEMP",
+    },
     Endpoints: {
       Localhost: "http://127.0.0.1:8188/prompt",
     },
@@ -46,6 +49,7 @@ const configs = {
     },
     Workflows: {
       LLMZIMAGE: "./input/workflows/zimage/YT_LLM_ZIMAGE_API.json",
+      ZIMAGEVIDEO: "./input/workflows/zimage/YT_API_ZIMAGE_W_VIDEO.json",
       QWEN3TTS: "./input/workflows/qwen3tts/YT_AUDIO_API.json",
     },
   },

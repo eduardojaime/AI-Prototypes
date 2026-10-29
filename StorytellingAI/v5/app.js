@@ -35,9 +35,9 @@ let inputScriptPath = "input/response-multi.mdtext";
 // Enums
 const SettingsEnum = {
   LangEN: "EN",
-  AudioIdxEN: "0",
+  AudioIdxEN: 0,
   LangES: "ES",
-  AudioIdxES: "1",
+  AudioIdxES: 1,
   ShortIncrement: configs.Settings.ShortIncrement,
 };
 
@@ -143,7 +143,9 @@ async function ProcessScript(
     if (val.includes("---") || val.includes("IMAGE-PROMPT-PARAGRAPH")) {
       // console.log("skipping");
     } else {
-      let row = val.split("|");
+      let row = val.split("|").map((column) => column.trim());
+      if (row[0] === "") row.shift();
+      if (row[row.length - 1] === "") row.pop();
       const asset = { idx };
 
       if (!skipImg) {

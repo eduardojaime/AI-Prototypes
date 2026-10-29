@@ -111,9 +111,24 @@ async function generateVideoWorkflow(imgPrompt, idx, isShort, selectedTheme) {
   const workflowPath = path.join(__dirname, configs.ComfyUI.Workflows.ZIMAGEVIDEO);
   const workflowJson = JSON.parse(fs.readFileSync(workflowPath, "utf8"));
 
-  const requiredNodeIds = ["538:536", "12", "1430", "57", "58", "3", "1435", "1501:91"];
-  if (requiredNodeIds.some((nodeId) => !workflowJson[nodeId]?.inputs)) {
-    throw new Error("The configured video workflow is missing required prompt or save nodes.");
+  const findNodeId = (classType) =>
+    Object.entries(workflowJson).find(([, node]) => node.class_type === classType)?.[0];
+  const saveVideoNodeId = findNodeId("SaveVideo");
+  const createVideoNodeId = findNodeId("CreateVideo");
+  const requiredNodeIds = ["538:536", "12", "57", "58", "3", "1435"];
+  const missingNodeIds = requiredNodeIds.filter(
+    (nodeId) => !workflowJson[nodeId]?.inputs
+  );
+  if (
+    missingNodeIds.length > 0 ||
+    !saveVideoNodeId ||
+    !workflowJson[saveVideoNodeId]?.inputs ||
+    !createVideoNodeId ||
+    !workflowJson[createVideoNodeId]?.inputs
+  ) {
+    throw new Error(
+      `The configured video workflow is missing required nodes. Missing node IDs: ${missingNodeIds.join(", ") || "none"}; SaveVideo: ${saveVideoNodeId || "not found"}; CreateVideo: ${createVideoNodeId || "not found"}.`
+    );
   }
 
   workflowJson["538:536"].inputs.value =
@@ -127,10 +142,10 @@ async function generateVideoWorkflow(imgPrompt, idx, isShort, selectedTheme) {
     ? "9:16 (Portrait Widescreen)"
     : "16:9 (Widescreen)";
   workflowJson["1435"].inputs.megapixels = 0.4;
-  workflowJson["1430"].inputs["filename_prefix"] =
+  workflowJson[saveVideoNodeId].inputs["filename_prefix"] =
     `${configs.ComfyUI.OutputFolders.VideoTemp}/${path.basename(videoFileName, ".mp4")}`;
   // The generated clip is intentionally silent; narration is muxed in later.
-  delete workflowJson["1501:91"].inputs.audio;
+  delete workflowJson[createVideoNodeId].inputs.audio;
 
   console.log(`Generating image and video for script item ${idx}`);
   const outputs = await submitWorkflow(workflowJson);
@@ -142,7 +157,7 @@ async function generateVideoWorkflow(imgPrompt, idx, isShort, selectedTheme) {
     throw new Error(`ComfyUI did not save an image with prefix ${imagePrefix}.`);
   }
 
-  moveVideoOutput(outputs, "1430", videoPath);
+  moveVideoOutput(outputs, saveVideoNodeId, videoPath);
   return { imagePath: generatedImages[0], videoPath };
 }
 

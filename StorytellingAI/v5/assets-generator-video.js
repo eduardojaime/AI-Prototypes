@@ -1,9 +1,12 @@
 const fs = require("fs");
 const path = require("path");
+const { execFile } = require("child_process");
+const { promisify } = require("util");
 // Uses downloaded copy of latest binaries in ffmpeg/bin folder
 const ffmpegPath = path.join(__dirname, "ffmpeg", "bin", "ffmpeg.exe");
 const ffprobePath = path.join(__dirname, "ffmpeg", "bin", "ffprobe.exe");
 const ffmpeg = require("fluent-ffmpeg");
+const execFileAsync = promisify(execFile);
 const musicMetadata = require("music-metadata");
 const frameRate = 30; // Frame rate for smoother video
 const audioBitRate = "384k"; // Increased audio bitrate for better quality
@@ -23,6 +26,41 @@ async function getDuration(filePath) {
   const metadata = await musicMetadata.parseFile(filePath);
   console.log(`Audio Duration: ${metadata.format.duration} seconds`);
   return metadata.format.duration;
+}
+
+function parseFrameRate(frameRateValue) {
+  if (typeof frameRateValue !== "string") return NaN;
+  const [numerator, denominator = "1"] = frameRateValue.split("/");
+  const frameRate = Number(numerator) / Number(denominator);
+  return Number.isFinite(frameRate) && frameRate > 0 ? frameRate : NaN;
+}
+
+async function getVideoFrameInfo(videoPath) {
+  const { stdout } = await execFileAsync(ffprobePath, [
+    "-v",
+    "error",
+    "-select_streams",
+    "v:0",
+    "-count_frames",
+    "-show_entries",
+    "stream=nb_read_frames,nb_frames,avg_frame_rate,duration:format=duration",
+    "-of",
+    "json",
+    videoPath,
+  ]);
+  const metadata = JSON.parse(stdout);
+  const videoStream = metadata.streams?.[0];
+  const frameRate = parseFrameRate(videoStream?.avg_frame_rate);
+  let frameCount = Number(videoStream?.nb_read_frames || videoStream?.nb_frames);
+
+  if (!Number.isInteger(frameCount) || frameCount < 1) {
+    const clipDuration = Number(videoStream?.duration || metadata.format?.duration);
+    frameCount = Math.round(clipDuration * frameRate);
+  }
+  if (!Number.isInteger(frameCount) || frameCount < 2 || !Number.isFinite(frameRate)) {
+    throw new Error(`Could not determine frame count and frame rate for ${videoPath}`);
+  }
+  return { frameCount, frameRate };
 }
 
 function resolveAssetPath(filePath) {
@@ -143,14 +181,26 @@ async function mergeVideoAndAudio(
   if (!Number.isFinite(duration) || duration <= 0) {
     throw new Error(`Could not determine a valid narration duration for ${audioPath}`);
   }
+  const { frameCount, frameRate: sourceFrameRate } = await getVideoFrameInfo(videoPath);
+  const pingPongFrameCount = frameCount * 2 - 2;
+  const sourceFrameRateExpression = sourceFrameRate.toFixed(6);
+  const videoFilter = [
+    `[0:v:0]split=2[forwardSource][reverseSource]`,
+    `[forwardSource]setpts=N/(${sourceFrameRateExpression}*TB)[forward]`,
+    `[reverseSource]reverse,trim=start_frame=1:end_frame=${frameCount - 1},setpts=N/(${sourceFrameRateExpression}*TB)[backward]`,
+    `[forward][backward]concat=n=2:v=1:a=0,loop=loop=-1:size=${pingPongFrameCount}:start=0,setpts=N/(${sourceFrameRateExpression}*TB),trim=duration=${duration.toFixed(3)},setpts=PTS-STARTPTS,${selectedScale}[v]`,
+  ];
+  console.log(
+    `Ping-pong looping ${frameCount} source frames (${sourceFrameRate.toFixed(3)} fps; ${pingPongFrameCount} frames per cycle)`
+  );
 
   return new Promise((resolve, reject) => {
     ffmpeg()
       .input(videoPath)
-      .inputOptions(["-stream_loop -1"])
       .input(audioPath)
+      .complexFilter(videoFilter)
       .outputOptions([
-        "-map 0:v:0",
+        "-map [v]",
         "-map 1:a:0",
         "-c:v libx264",
         `-b:v ${videoBitRate}`, // Set video bitrate
@@ -162,9 +212,7 @@ async function mergeVideoAndAudio(
         "-shortest",
         `-t ${duration.toFixed(3)}`,
         `-r ${frameRate}`, // Set frame rate
-        "-shortest",
       ])
-      .videoFilters(selectedScale)
       .save(outputPath)
       .on("end", () => {
         console.log("Merging completed: " + outputPath);

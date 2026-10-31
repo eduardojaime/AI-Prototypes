@@ -314,6 +314,14 @@ async function GenerateVideoOutput(language, isVideo, assets = []) {
       isShort,
       isVideo
     );
+    if (fs.existsSync(subtitlesFilePath)) {
+      const subtitlesOutputPath = path.join(
+        outputFolder,
+        `${path.parse(finalOutputWithBgSound).name}.srt`
+      );
+      fs.renameSync(subtitlesFilePath, subtitlesOutputPath);
+      console.log("Subtitles saved to: " + subtitlesOutputPath);
+    }
   } else {
     console.log(
       "Process will not start. Mismatch between image and audio files. Audio Files: " +

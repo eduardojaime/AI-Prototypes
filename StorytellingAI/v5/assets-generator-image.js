@@ -99,6 +99,30 @@ function moveVideoOutput(outputs, videoNodeId, videoPath) {
   }
 }
 
+function findCachedVideoAsset(idx) {
+  const inputPath = path.join(__dirname, "input");
+  const paddedIdx = idx.toString().padStart(2, "0");
+  const imagePattern = new RegExp(`^image-${paddedIdx}-(\\d+-\\d+)-01\\.png$`);
+  const files = fs.readdirSync(inputPath);
+  const matches = files
+    .map((file) => ({ file, match: file.match(imagePattern) }))
+    .filter(({ match }) => match)
+    .map(({ file, match }) => {
+      const videoPath = path.join(inputPath, `video-${paddedIdx}-${match[1]}.mp4`);
+      return {
+        imagePath: path.join(inputPath, file),
+        videoPath,
+        modifiedAt: fs.existsSync(videoPath)
+          ? fs.statSync(videoPath).mtimeMs
+          : -1,
+      };
+    })
+    .filter((asset) => asset.modifiedAt >= 0)
+    .sort((left, right) => right.modifiedAt - left.modifiedAt);
+
+  return matches[0];
+}
+
 async function generateVideoWorkflow(imgPrompt, idx, isShort, selectedTheme) {
   const formats = configs.ComfyUI.Formats;
   const selectedFormat = isShort ? formats.Vertical.FHD : formats.Horizontal.FHD;
@@ -200,6 +224,11 @@ async function GenerateImage(
 ) {
   try {
     if (isVideo) {
+      const cachedAsset = findCachedVideoAsset(idx);
+      if (cachedAsset) {
+        console.log(`File Exists: ${cachedAsset.imagePath} and ${cachedAsset.videoPath}`);
+        return { imagePath: cachedAsset.imagePath, videoPath: cachedAsset.videoPath };
+      }
       return await generateVideoWorkflow(imgPrompt, idx, isShort, selectedTheme);
     }
 
